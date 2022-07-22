@@ -1,5 +1,6 @@
 package com.infoworks.lab.domain.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.infoworks.lab.rest.models.Response;
 
 public class ChartOfAccountResponse extends Response {
@@ -14,4 +15,9 @@ public class ChartOfAccountResponse extends Response {
         this.accountRef = accountTitle;
         return this;
     }
+
+    @JsonIgnore private String payload;
+    @JsonIgnore private Integer status = 200;
+    @JsonIgnore private String error;
+    @JsonIgnore private String message;
 }

@@ -14,7 +14,7 @@ public class CreateAccount extends Response {
 
     @NotNull(message = "prefix must not be null or empty! e.g CASH, REVENUE, bKash, NAGAD etc")
     @Length(max = 6, min = 1, message = "type has to be 1<=length<=6")
-    private String prefix;
+    private String prefix = "CASH";
 
     @NotNull(message = "amount has to be not null, you may pass default zero amount. e.g. 0.00 ")
     @Money(message = "amount has to be 0.00 or any combination with at least 2 digit after precision. e.g. 1002001.00 or 1200933.97 etc")
@@ -22,11 +22,11 @@ public class CreateAccount extends Response {
 
     @NotNull(message = "currency should not be null. e.g. BDT, USD, EUR etc")
     @IsValidCurrencyCode(message = "currency is invalid. e.g. BDT, USD, EUR etc")
-    private String currency;
+    private String currency = "BDT";
 
     @NotNull(message = "accountType must not be null or empty!")
     @IsValidAccountType(message = "accountType = MASTER or USER")
-    private String accountType;
+    private String accountType = "USER";
 
     @JsonIgnore
     private String username;
@@ -90,4 +90,9 @@ public class CreateAccount extends Response {
     public void setAccountType(String accountType) {
         this.accountType = accountType;
     }
+
+    @JsonIgnore private String payload;
+    @JsonIgnore private Integer status = 200;
+    @JsonIgnore private String error;
+    @JsonIgnore private String message;
 }

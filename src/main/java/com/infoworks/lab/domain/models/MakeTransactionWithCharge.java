@@ -1,5 +1,6 @@
 package com.infoworks.lab.domain.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.infoworks.lab.domain.validation.constraint.MoneyFormat.Money;
 
 import javax.validation.constraints.NotNull;
@@ -54,4 +55,9 @@ public class MakeTransactionWithCharge extends MakeTransaction {
         } catch (Exception e) {}
         return null;
     }
+
+    @JsonIgnore private String payload;
+    @JsonIgnore private Integer status = 200;
+    @JsonIgnore private String error;
+    @JsonIgnore private String message;
 }

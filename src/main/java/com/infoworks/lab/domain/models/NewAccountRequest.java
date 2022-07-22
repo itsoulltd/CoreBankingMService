@@ -1,5 +1,6 @@
 package com.infoworks.lab.domain.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.infoworks.lab.domain.validation.constraint.CurrencyCode.IsValidCurrencyCode;
 import com.infoworks.lab.domain.validation.constraint.MoneyFormat.Money;
 import com.infoworks.lab.rest.models.Message;
@@ -7,9 +8,11 @@ import com.infoworks.lab.rest.validation.Email.EmailPattern;
 import com.infoworks.lab.rest.validation.Password.PasswordRule;
 
 import javax.validation.constraints.NotEmpty;
-import java.math.BigDecimal;
 
 public class NewAccountRequest extends Message {
+
+    @JsonIgnore
+    private String payload;
 
     @NotEmpty(message = "Username must not null or empty!")
     private String username;
@@ -27,7 +30,7 @@ public class NewAccountRequest extends Message {
     private String amount;
 
     @IsValidCurrencyCode(message = "currency is invalid. e.g. BDT, USD, EUR etc")
-    private String currency;
+    private String currency = "BDT";
 
     public NewAccountRequest(String username, String password, String email, String mobile) {
         this.username = username;

@@ -1,10 +1,14 @@
 package com.infoworks.lab.domain.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.infoworks.lab.rest.models.Message;
 
 import javax.validation.constraints.NotEmpty;
 
 public class LoginRequest extends Message {
+
+    @JsonIgnore
+    private String payload;
 
     @NotEmpty(message = "Username must not null or empty!")
     private String username;

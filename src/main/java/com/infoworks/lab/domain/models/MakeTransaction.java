@@ -61,4 +61,9 @@ public class MakeTransaction extends CreateAccount {
     public void setTo(String to) {
         this.to = to;
     }
+
+    @JsonIgnore private String payload;
+    @JsonIgnore private Integer status = 200;
+    @JsonIgnore private String error;
+    @JsonIgnore private String message;
 }
