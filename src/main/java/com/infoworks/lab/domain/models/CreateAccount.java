@@ -28,7 +28,6 @@ public class CreateAccount extends Response {
     @IsValidAccountType(message = "accountType = MASTER or USER")
     private String accountType = "USER";
 
-    @JsonIgnore
     private String username;
 
     public String getPrefix() {

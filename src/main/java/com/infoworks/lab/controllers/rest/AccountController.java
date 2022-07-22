@@ -46,15 +46,9 @@ public class AccountController {
             return ResponseEntity.unprocessableEntity().body(response);
         }
         //
-        String username = TokenValidator.parsePayload(token, JWTPayload.class).getIss();
-        if (username == null || username.isEmpty()){
+        if (createAccount.getUsername() == null || createAccount.getUsername().isEmpty()){
             response.setError("Invalid Username in token.");
             return ResponseEntity.unprocessableEntity().body(response);
-        }
-        //IF- username is NULL OR EMPTY in the model, then the username associate with the token
-        // will be set.
-        if (createAccount.getUsername() == null || createAccount.getUsername().isEmpty()){
-            createAccount.setUsername(username);
         }
         //
         TaskStack stack = TaskStack.createSync(true);

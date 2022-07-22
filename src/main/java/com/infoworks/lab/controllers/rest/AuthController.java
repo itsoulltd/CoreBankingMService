@@ -1,9 +1,11 @@
 package com.infoworks.lab.controllers.rest;
 
+import com.infoworks.lab.domain.models.CreateAccount;
 import com.infoworks.lab.domain.models.LoginRequest;
 import com.infoworks.lab.domain.models.NewAccountRequest;
 import com.infoworks.lab.jjwt.JWTHeader;
 import com.infoworks.lab.jjwt.JWTPayload;
+import com.infoworks.lab.jjwt.TokenValidator;
 import com.infoworks.lab.jwtoken.definition.TokenProvider;
 import com.infoworks.lab.jwtoken.services.JWTokenProvider;
 import com.infoworks.lab.rest.models.Response;
@@ -29,25 +31,32 @@ public class AuthController {
 
     private static Logger LOG = LoggerFactory.getLogger("AuthController");
     private PasswordEncoder passwordEncoder;
+    private AccountController accountController;
 
-    public AuthController(PasswordEncoder passwordEncoder) {
+    public AuthController(PasswordEncoder passwordEncoder
+            , AccountController accountController) {
         this.passwordEncoder = passwordEncoder;
+        this.accountController = accountController;
     }
 
     @GetMapping("/isValidToken")
     public ResponseEntity<String> isValid(@RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String token
                     , @ApiIgnore @AuthenticationPrincipal UserDetails principal){
-        Response response = new Response().setStatus(HttpStatus.OK.value())
-                .setMessage("Hello IsValidToken");
-        return ResponseEntity.ok(response.toString());
+        //
+        Response response = new Response().
+                setStatus(HttpStatus.NOT_IMPLEMENTED.value())
+                .setMessage("IsValidToken is under construction!");
+        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(response.toString());
     }
 
     @GetMapping("/refreshToken")
     public ResponseEntity<String> refreshToken(@RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String token
             , @ApiIgnore @AuthenticationPrincipal UserDetails principal){
-        Response response = new Response().setStatus(HttpStatus.OK.value())
-                .setMessage("Hello RefreshToken");
-        return ResponseEntity.ok(response.toString());
+        //
+        Response response = new Response().
+                setStatus(HttpStatus.NOT_IMPLEMENTED.value())
+                .setMessage("RefreshToken is under construction!");
+        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(response.toString());
     }
 
     @PostMapping("/new/account")
@@ -56,9 +65,16 @@ public class AuthController {
             , @Valid @RequestBody NewAccountRequest account){
         Response response = new Response().setStatus(HttpStatus.OK.value())
                 .setMessage("Hello NewAccount");
-        //TODO:
-        //Create A New Bank-Account:
-        //..
+        //First Create New User:
+        //...
+        //Then Create A New Bank-Account For that User:
+        CreateAccount createAccount = new CreateAccount();
+        createAccount.setUsername(account.getUsername());
+        createAccount.setPrefix("CASH");
+        createAccount.setAccountType("USER");
+        createAccount.setCurrency(account.getCurrency());
+        createAccount.setAmount(account.getAmount());
+        ResponseEntity<Response> res = accountController.createVAccount(token, createAccount);
         return ResponseEntity.ok(response.toString());
     }
 
@@ -66,7 +82,7 @@ public class AuthController {
     public ResponseEntity<String> login(@Valid @RequestBody LoginRequest request){
         Response response = new Response().setStatus(HttpStatus.OK.value())
                 .setMessage("Hello Login");
-        //TODO:
+        //Generate Jwt-Token:
         String kid = JWTokenValidator.getRandomSecretKey();
         String secret = JWTokenValidator.getSecretKeyMap().get(kid);
         //Create the JWT-Token:
@@ -90,23 +106,29 @@ public class AuthController {
     @PostMapping("/logout")
     public ResponseEntity<String> logout(@RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String token
             , @ApiIgnore @AuthenticationPrincipal UserDetails principal){
-        Response response = new Response().setStatus(HttpStatus.OK.value())
-                .setMessage("Hello Logout");
-        return ResponseEntity.ok(response.toString());
+        //
+        Response response = new Response().
+                setStatus(HttpStatus.NOT_IMPLEMENTED.value())
+                .setMessage("Logout is under construction!");
+        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(response.toString());
     }
 
     @GetMapping("/forget")
     public ResponseEntity<String> forget(@RequestParam String email){
-        Response response = new Response().setStatus(HttpStatus.OK.value())
-                .setMessage("Hello Forget");
-        return ResponseEntity.ok(response.toString());
+        //
+        Response response = new Response().
+                setStatus(HttpStatus.NOT_IMPLEMENTED.value())
+                .setMessage("Forget is under construction!");
+        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(response.toString());
     }
 
     @GetMapping("/reset")
     public ResponseEntity<String> reset(@RequestParam String resetToken){
-        Response response = new Response().setStatus(HttpStatus.OK.value())
-                .setMessage("Hello Reset");
-        return ResponseEntity.ok(response.toString());
+        //
+        Response response = new Response().
+                setStatus(HttpStatus.NOT_IMPLEMENTED.value())
+                .setMessage("Reset is under construction!");
+        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(response.toString());
     }
 
 }
