@@ -11,6 +11,8 @@ import com.infoworks.lab.services.vaccount.CheckBalanceTask;
 import com.infoworks.lab.services.vaccount.CheckVAccountExistTask;
 import com.infoworks.lab.services.vaccount.CreateChartOfAccountTask;
 import com.infoworks.lab.services.vaccount.MakeTransactionTask;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -20,16 +22,17 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 
 @RestController
-@RequestMapping("/v1")
-public class AccountControllerV1 {
+@RequestMapping("/account/v1")
+public class AccountController {
 
+    private static Logger LOG = LoggerFactory.getLogger("AccountController");
     private LedgerBook ledgerBook;
 
-    public AccountControllerV1(@Qualifier("GeneralLedger") LedgerBook ledgerBook) {
+    public AccountController(@Qualifier("GeneralLedger") LedgerBook ledgerBook) {
         this.ledgerBook = ledgerBook;
     }
 
-    @PostMapping
+    @PostMapping("/new/account")
     public ResponseEntity<Response> createVAccount(
             @RequestHeader(HttpHeaders.AUTHORIZATION) String token
             ,@Valid @RequestBody CreateAccount createAccount){

@@ -10,6 +10,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
@@ -41,9 +42,18 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 //.requiresChannel().anyRequest().requiresSecure() //enable for Https
                 //.and()
                 //.authorizeRequests().anyRequest().authenticated() //enable to restrict all
-                .authorizeRequests().antMatchers("/**").permitAll(); //enable to open all
-                //.and()
-                //.addFilterBefore(new AuthorizationFilter(), BasicAuthenticationFilter.class);
+                //.authorizeRequests().antMatchers("/**").permitAll(); //enable to open all
+                .authorizeRequests()
+                .antMatchers("/auth/v1/login"
+                        , "/auth/v1/forget"
+                        , "/auth/v1/reset")
+                        .permitAll()
+                .antMatchers("/auth/v1/new/account"
+                        , "/account/v1/new/account")
+                        .hasAnyRole("ROLE_ADMIN", "ADMIN", "BANK_ADMIN")
+                .anyRequest().authenticated()
+                .and()
+                .addFilterBefore(new AuthorizationFilter(), BasicAuthenticationFilter.class);
         //Disable for H2 DB:
         if (activeDriverClass.equalsIgnoreCase(DriverClass.H2_EMBEDDED.toString())){
             http.headers().frameOptions().disable();
