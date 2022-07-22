@@ -59,7 +59,7 @@ public class StartupConfig implements CommandLineRunner {
         CreateAccount cashAccount = new CreateAccount()
                 .setPrefix(AccountPrefix.CASH.name())
                 .setUsername(AccountType.MASTER.value())
-                .setAmount("0.00");
+                .setAmount("10000000000.00");
         CreateChartOfAccountTask cashTask = new CreateChartOfAccountTask(ledgerBook, cashAccount);
 
         CreateAccount revenueAccount = new CreateAccount()
