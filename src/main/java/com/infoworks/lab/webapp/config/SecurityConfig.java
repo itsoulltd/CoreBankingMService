@@ -1,7 +1,8 @@
 package com.infoworks.lab.webapp.config;
 
+import com.it.soul.lab.connect.DriverClass;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -9,10 +10,8 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled=true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Bean
@@ -31,6 +30,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             , "/actuator/prometheus"
     };
 
+    @Value("${spring.datasource.driver-class-name}") String activeDriverClass;
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.sessionManagement()
@@ -44,7 +45,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 //.and()
                 //.addFilterBefore(new AuthorizationFilter(), BasicAuthenticationFilter.class);
         //Disable for H2 DB:
-        http.headers().frameOptions().disable();
+        if (activeDriverClass.equalsIgnoreCase(DriverClass.H2_EMBEDDED.toString())){
+            http.headers().frameOptions().disable();
+        }
     }
 
     @Override
