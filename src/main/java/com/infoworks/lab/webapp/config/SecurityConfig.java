@@ -29,6 +29,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             , "/swagger-resources/configuration/**"
             , "/actuator/health"
             , "/actuator/prometheus"
+            , "/h2-console/**"
     };
 
     @Value("${spring.datasource.driver-class-name}") String activeDriverClass;
@@ -54,6 +55,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .anyRequest().authenticated()
                 .and()
                 .addFilterBefore(new AuthorizationFilter(), BasicAuthenticationFilter.class);
+        //
         //Disable for H2 DB:
         if (activeDriverClass.equalsIgnoreCase(DriverClass.H2_EMBEDDED.toString())){
             http.headers().frameOptions().disable();

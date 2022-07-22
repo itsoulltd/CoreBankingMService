@@ -26,7 +26,7 @@ public class InitializeVAccountDB extends LedgerTask {
     public Message execute(Message message) throws RuntimeException {Response response = new Response();
         SourceConnector connector = getConnector();
         ScriptRunner runner = new ScriptRunner();
-        Path path = Paths.get("VirtualAccountServiceStarter","src","main","resources");
+        Path path = Paths.get("src","main","resources");
         String absolutePath = path.toFile().getAbsolutePath();
         File file = new File(absolutePath + "/" + connector.schema());
         //
