@@ -43,8 +43,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 //.requiresChannel().anyRequest().requiresSecure() //enable for Https
                 //.and()
                 //.authorizeRequests().anyRequest().authenticated() //enable to restrict all
-                //.authorizeRequests().antMatchers("/**").permitAll(); //enable to open all
-                .authorizeRequests()
+                .authorizeRequests().antMatchers("/**").permitAll(); //enable to open all
+                /*.authorizeRequests()
                 .antMatchers("/auth/v1/login"
                         , "/auth/v1/forget"
                         , "/auth/v1/reset")
@@ -54,7 +54,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         .hasAnyRole("ROLE_ADMIN", "ADMIN", "BANK_ADMIN")
                 .anyRequest().authenticated()
                 .and()
-                .addFilterBefore(new AuthorizationFilter(), BasicAuthenticationFilter.class);
+                .addFilterBefore(new AuthorizationFilter(), BasicAuthenticationFilter.class);*/
         //
         //Disable for H2 DB:
         if (activeDriverClass.equalsIgnoreCase(DriverClass.H2_EMBEDDED.toString())){
