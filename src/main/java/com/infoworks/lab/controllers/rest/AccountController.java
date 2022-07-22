@@ -2,7 +2,12 @@ package com.infoworks.lab.controllers.rest;
 
 import com.infoworks.lab.beans.tasks.definition.TaskStack;
 import com.infoworks.lab.domain.models.CreateAccount;
+import com.infoworks.lab.domain.models.MakeDeposit;
 import com.infoworks.lab.domain.models.MakeTransaction;
+import com.infoworks.lab.domain.models.MakeWithdrawal;
+import com.infoworks.lab.domain.types.AccountType;
+import com.infoworks.lab.jjwt.JWTPayload;
+import com.infoworks.lab.jjwt.TokenValidator;
 import com.infoworks.lab.rest.models.Response;
 import com.infoworks.lab.services.ledger.LedgerBook;
 import com.infoworks.lab.services.vaccount.CheckBalanceTask;
@@ -77,6 +82,11 @@ public class AccountController {
             response.setError("Invalid Username.");
             return ResponseEntity.unprocessableEntity().body(response);
         }
+        String tokenIss = TokenValidator.parsePayload(token, JWTPayload.class).getIss();
+        if (!transaction.getUsername().equalsIgnoreCase(tokenIss)){
+            response.setError("Unauthorized Access By: " + transaction.getUsername());
+            return ResponseEntity.unprocessableEntity().body(response);
+        }
         //Now Make The Transaction-Flow
         TaskStack stack = TaskStack.createSync(true);
         stack.push(new MakeTransactionTask(ledgerBook, transaction));
@@ -85,6 +95,77 @@ public class AccountController {
                 response.setMessage("Transaction Has Successfully Executed!");
             }else{
                 response.setMessage("Transaction Has Failed To Execute!");
+            }
+        });
+        //
+        return ResponseEntity.ok().body(response);
+    }
+
+    @PostMapping("/make/deposit")
+    public ResponseEntity<Response> makeDeposit(
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String token
+            ,@Valid @RequestBody MakeDeposit transaction){
+        //
+        Response response = new Response()
+                .setMessage("Successfully Enqueued for Processing.")
+                .setStatus(HttpStatus.OK.value());
+        //
+        if (transaction.getUsername() == null || transaction.getUsername().isEmpty()){
+            response.setError("Invalid Username.");
+            return ResponseEntity.unprocessableEntity().body(response);
+        }
+        String tokenIss = TokenValidator.parsePayload(token, JWTPayload.class).getIss();
+        if (!transaction.getUsername().equalsIgnoreCase(tokenIss)){
+            response.setError("Unauthorized Access By: " + transaction.getUsername());
+            return ResponseEntity.unprocessableEntity().body(response);
+        }
+        transaction.setPrefix("CASH");
+        transaction.setFrom("CASH@" + AccountType.MASTER.value());
+        transaction.setType("deposit");
+        transaction.setTo(LedgerBook.getACNo(transaction.getUsername(), transaction.getPrefix()));
+        //Now Make The Transaction-Flow
+        TaskStack stack = TaskStack.createSync(true);
+        stack.push(new MakeTransactionTask(ledgerBook, transaction));
+        stack.commit(false, (message, state) -> {
+            if (state == TaskStack.State.Finished){
+                response.setMessage("Deposit Has Successfully Executed!");
+            }else{
+                response.setMessage("Deposit Has Failed To Execute!");
+            }
+        });
+        //
+        return ResponseEntity.ok().body(response);
+    }
+
+    @PostMapping("/make/withdrawal")
+    public ResponseEntity<Response> makeWithdrawal(
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String token
+            ,@Valid @RequestBody MakeWithdrawal transaction){
+        //
+        Response response = new Response()
+                .setMessage("Successfully Enqueued for Processing.")
+                .setStatus(HttpStatus.OK.value());
+        //
+        if (transaction.getUsername() == null || transaction.getUsername().isEmpty()){
+            response.setError("Invalid Username.");
+            return ResponseEntity.unprocessableEntity().body(response);
+        }
+        String tokenIss = TokenValidator.parsePayload(token, JWTPayload.class).getIss();
+        if (!transaction.getUsername().equalsIgnoreCase(tokenIss)){
+            response.setError("Unauthorized Access By: " + transaction.getUsername());
+            return ResponseEntity.unprocessableEntity().body(response);
+        }
+        transaction.setPrefix("CASH");
+        transaction.setTo("CASH@" + AccountType.MASTER.value());
+        transaction.setType("withdrawal");
+        //Now Make The Transaction-Flow
+        TaskStack stack = TaskStack.createSync(true);
+        stack.push(new MakeTransactionTask(ledgerBook, transaction));
+        stack.commit(false, (message, state) -> {
+            if (state == TaskStack.State.Finished){
+                response.setMessage("Withdrawal Has Successfully Executed!");
+            }else{
+                response.setMessage("Withdrawal Has Failed To Execute!");
             }
         });
         //
