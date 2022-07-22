@@ -55,9 +55,4 @@ public class MakeTransactionWithCharge extends MakeTransaction {
         } catch (Exception e) {}
         return null;
     }
-
-    @JsonIgnore private String payload;
-    @JsonIgnore private Integer status = 200;
-    @JsonIgnore private String error;
-    @JsonIgnore private String message;
 }
