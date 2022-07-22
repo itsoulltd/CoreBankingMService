@@ -1,6 +1,5 @@
 package com.infoworks.lab.domain.models;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.infoworks.lab.domain.validation.constraint.MoneyFormat.Money;
 
 import javax.validation.constraints.NotNull;
