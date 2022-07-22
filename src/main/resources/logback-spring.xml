@@ -70,9 +70,9 @@
     </appender>-->
     <!-- -->
     <root level="INFO">
-        <!--<appender-ref ref="CONSOLE"/>-->
+        <appender-ref ref="CONSOLE"/>
         <!--<appender-ref ref="FILE"/>-->
-        <appender-ref ref="CONSOLE-JSON"/>
+        <!--<appender-ref ref="CONSOLE-JSON"/>-->
     </root>
     <!-- -->
 </configuration>
