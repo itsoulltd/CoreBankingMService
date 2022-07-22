@@ -1,26 +1,26 @@
 package com.infoworks.lab.services.vaccount;
 
-import com.infoworks.lab.domain.models.MakeTransaction;
-import com.infoworks.lab.services.ledger.LedgerBook;
+import com.infoworks.lab.domain.models.Transaction;
 import com.infoworks.lab.rest.models.Message;
 import com.infoworks.lab.rest.models.Response;
+import com.infoworks.lab.services.ledger.LedgerBook;
 import com.itsoul.lab.generalledger.entities.Money;
 import org.springframework.http.HttpStatus;
 
 public class MakeTransactionTask extends LedgerTask {
 
-    private MakeTransaction transaction;
+    private Transaction transaction;
 
     public MakeTransactionTask(LedgerBook book) {super(book);}
 
-    public MakeTransaction getTransaction() {
-        if (transaction == null && (getMessage() instanceof MakeTransaction)){
-            transaction = (MakeTransaction) getMessage();
+    public Transaction getTransaction() {
+        if (transaction == null && (getMessage() instanceof Transaction)){
+            transaction = (Transaction) getMessage();
         }
         return transaction;
     }
 
-    public MakeTransactionTask(LedgerBook book, MakeTransaction message) {
+    public MakeTransactionTask(LedgerBook book, Transaction message) {
         super(book, message);
     }
 

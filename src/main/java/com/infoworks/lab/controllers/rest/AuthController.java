@@ -75,7 +75,7 @@ public class AuthController {
         createAccount.setCurrency(account.getCurrency());
         createAccount.setAmount(account.getAmount());
         ResponseEntity<Response> res = accountController.createVAccount(token, createAccount);
-        return ResponseEntity.ok(response.toString());
+        return ResponseEntity.ok(res.getBody().toString());
     }
 
     @PostMapping("/login")

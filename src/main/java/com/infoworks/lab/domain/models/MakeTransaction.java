@@ -1,13 +1,10 @@
 package com.infoworks.lab.domain.models;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.NotNull;
 
-public class MakeTransaction extends CreateAccount {
-
-    @JsonIgnore private String accountType;
+public class MakeTransaction extends Transaction {
 
     @NotNull(message = "type must not be null. Any string less-then 20 char. e.g. transaction, purchase, transfer etc")
     @Length(max = 20, min = 1, message = "type has to be 1<=length<=20")
@@ -18,48 +15,22 @@ public class MakeTransaction extends CreateAccount {
     @Length(max = 20, min = 1, message = "to has to be 1<=length<=20")
     private String to;
 
-    /**
-     * If null then, we will generate this.
-     */
-    @JsonIgnore
-    @Length(max = 20, min = 1, message = "ref has to be 1<=length<=20")
-    private String ref;
-
-    /**
-     * from could be null, because we can reconstruct it from token's embedded userID/issuer/
-     */
-    @JsonIgnore
-    @Length(max = 20, min = 1, message = "from has to be 1<=length<=20")
-    private String from;
-
+    @Override
     public String getType() {
         return type;
     }
 
+    @Override
     public void setType(String type) {
         this.type = type;
     }
 
-    public String getRef() {
-        return ref;
-    }
-
-    public void setRef(String ref) {
-        this.ref = ref;
-    }
-
-    public String getFrom() {
-        return from;
-    }
-
-    public void setFrom(String from) {
-        this.from = from;
-    }
-
+    @Override
     public String getTo() {
         return to;
     }
 
+    @Override
     public void setTo(String to) {
         this.to = to;
     }
