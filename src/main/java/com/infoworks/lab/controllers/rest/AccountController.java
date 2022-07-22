@@ -3,8 +3,6 @@ package com.infoworks.lab.controllers.rest;
 import com.infoworks.lab.beans.tasks.definition.TaskStack;
 import com.infoworks.lab.domain.models.CreateAccount;
 import com.infoworks.lab.domain.models.MakeTransaction;
-import com.infoworks.lab.jjwt.JWTPayload;
-import com.infoworks.lab.jjwt.TokenValidator;
 import com.infoworks.lab.rest.models.Response;
 import com.infoworks.lab.services.ledger.LedgerBook;
 import com.infoworks.lab.services.vaccount.CheckBalanceTask;
@@ -47,7 +45,7 @@ public class AccountController {
         }
         //
         if (createAccount.getUsername() == null || createAccount.getUsername().isEmpty()){
-            response.setError("Invalid Username in token.");
+            response.setError("Invalid Username.");
             return ResponseEntity.unprocessableEntity().body(response);
         }
         //
@@ -75,9 +73,9 @@ public class AccountController {
                 .setMessage("Successfully Enqueued for Processing.")
                 .setStatus(HttpStatus.OK.value());
         //
-        String username = TokenValidator.parsePayload(token, JWTPayload.class).getIss();
         if (transaction.getUsername() == null || transaction.getUsername().isEmpty()){
-            transaction.setUsername(username);
+            response.setError("Invalid Username.");
+            return ResponseEntity.unprocessableEntity().body(response);
         }
         //Now Make The Transaction-Flow
         TaskStack stack = TaskStack.createSync(true);
@@ -96,9 +94,9 @@ public class AccountController {
     @GetMapping("/balance")
     public ResponseEntity<Response> checkAccountBalance(
             @RequestHeader(HttpHeaders.AUTHORIZATION) String token
+            ,@RequestParam("username") String username
             ,@RequestParam("prefix") String prefix){
         //
-        String username = TokenValidator.parsePayload(token, JWTPayload.class).getIss();
         Response response = new Response()
                 .setError("Not Implemented")
                 .setStatus(HttpStatus.NOT_IMPLEMENTED.value());
@@ -118,9 +116,9 @@ public class AccountController {
     @GetMapping("/exist")
     public ResponseEntity<Response> checkAccountExist(
             @RequestHeader(HttpHeaders.AUTHORIZATION) String token
+            ,@RequestParam("username") String username
             ,@RequestParam("prefix") String prefix){
         //
-        String username = TokenValidator.parsePayload(token, JWTPayload.class).getIss();
         Response response = new Response()
                 .setError("Not Implemented")
                 .setStatus(HttpStatus.NOT_IMPLEMENTED.value());
