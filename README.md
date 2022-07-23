@@ -1,8 +1,10 @@
 ####Run application:
+
     ~>$ mvn clean package -DskipTests
     ~>$ mvn spring-boot:run
     
 ####Setting up:
+
     Access swagger @ http://localhost/api/swagger-ui.html
     Access h2-console @ http://localhost/api/h2-console
     JDBC URL: jdbc:h2:~/testDB
@@ -10,6 +12,7 @@
     password: sa
     
 ####How to Test User-Stories:
+
     [Note: Usually I do Unit Testing at least for service layer,
      In this assignment most of the api's like LadgerBook or JSQLEditor alredy tested and running in production.]
     
@@ -74,6 +77,7 @@
     
     
 ####Framework understanding:
+
     There are 4 opensource api has been user: all written and mantained by myself.
     1-> JSQLEditor: https://github.com/itsoulltd/JSQLEditor
     2-> LedgerBook: https://github.com/itsoulltd/WebComponentKit/tree/master/LedgerBook
@@ -81,6 +85,7 @@
     4-> JWTKit: https://github.com/itsoulltd/WebComponentKit/tree/master/JJWTWebToken
 
 ####Some points:
+
     Honestly speaking, I am always packed with quite convenssing number of production ready start-up code,
     ranging from back-end microservices to front-end applications.
     When ever I do some RnD on a specific technology, eventually I do wapped my work in a production ready startup code-base.
