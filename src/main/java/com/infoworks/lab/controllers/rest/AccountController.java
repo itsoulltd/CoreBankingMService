@@ -1,10 +1,7 @@
 package com.infoworks.lab.controllers.rest;
 
 import com.infoworks.lab.beans.tasks.definition.TaskStack;
-import com.infoworks.lab.domain.models.CreateAccount;
-import com.infoworks.lab.domain.models.MakeDeposit;
-import com.infoworks.lab.domain.models.MakeTransaction;
-import com.infoworks.lab.domain.models.MakeWithdrawal;
+import com.infoworks.lab.domain.models.*;
 import com.infoworks.lab.domain.types.AccountType;
 import com.infoworks.lab.jjwt.JWTPayload;
 import com.infoworks.lab.jjwt.TokenValidator;
@@ -224,14 +221,16 @@ public class AccountController {
         return ResponseEntity.ok().body(response);
     }
 
-    @GetMapping("/all/transactions")
+    @GetMapping("/recent/transactions")
     public ResponseEntity<List<Map>> searchAll(@RequestHeader(HttpHeaders.AUTHORIZATION) String token
                                     , @RequestParam("username") String username
                                     , @RequestParam("prefix") String prefix) {
         //
         String matcher = LedgerBook.getACNo(username, prefix);
         List<Transaction> cashAccountTransactionList = ledgerBook.findTransactions(prefix, username);
-        List<Map> data = cashAccountTransactionList.stream()
+        int toIndex = cashAccountTransactionList.size() > 10 ? 10 : (cashAccountTransactionList.size() - 1);
+        List<Map> data = cashAccountTransactionList.subList(0, toIndex)
+                .stream()
                 .map(transaction -> {
                     Map<String, String> info = new HashMap<>();
                     info.put("transaction-ref", transaction.getTransactionRef());
@@ -244,14 +243,16 @@ public class AccountController {
                         info.put("balance", tLeg.get().getBalance().toPlainString());
                     }
                     info.put("transaction-type", transaction.getTransactionType());
-                    info.put("transaction-date", new SimpleDateFormat("yyyy-MM-dd").format(transaction.getTransactionDate()));
+                    info.put("transaction-date", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+                            .format(transaction.getTransactionDate()));
                     return info;
                 }).collect(Collectors.toList());
         return ResponseEntity.ok().body(data);
     }
 
+    @PostMapping("/search/transactions")
     public ResponseEntity<List<Map>> search(@RequestHeader(HttpHeaders.AUTHORIZATION) String token
-                                    , @RequestBody SearchQuery query) {
+                                    , @RequestBody TransHistoryQuery query) {
         //
         List<Transaction> cashAccountTransactionList = ledgerBook.findTransactions("", "");
         List<Map> data = cashAccountTransactionList.stream()
