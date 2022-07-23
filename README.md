@@ -1,6 +1,7 @@
 ####Run application:
     ~>$ mvn clean package -DskipTests
     ~>$ mvn spring-boot:run
+    
 ####Setting up:
     Access swagger @ http://localhost/api/swagger-ui.html
     Access h2-console @ http://localhost/api/h2-console
