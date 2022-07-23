@@ -59,6 +59,17 @@
     -> curl -X GET "http://localhost/api/account/v1/recent/transactions?prefix=CASH&username=giko" 
             -H  "accept: */*" 
             -H  "Authorization: Bearer eyJraWQiOiJ..........VrTbZrttBrIUwiw"
+            
+    Story-8: Find Paged Transaction By Date and Type
+    -> curl -X POST "http://localhost/api/account/v1/search/transactions?prefix=CASH&username=giko" 
+    -H  "accept: */*" 
+    -H  "Authorization: Bearer eyJraWQiOiJmNWJiWRVrTbZrttBrIUwiw" 
+    -H  "Content-Type: application/json" 
+    -d "{  \"descriptors\": [{\"keys\": [],\"order\": \"DESC\"}]
+         ,  \"page\": 0
+         ,  \"properties\": [{\"key\": \"from\",\"logic\": \"AND\", \"nextKey\": null,\"operator\": \"EQUAL\",\"type\": \"STRING\",\"value\": \"2022-07-23\"}
+                            ,{\"key\": \"type\",\"logic\": \"AND\", \"nextKey\": null,\"operator\": \"EQUAL\",\"type\": \"STRING\",\"value\": \"deposit\"}]
+         ,  \"size\": 10}"
     
     
 ####Framework understanding:

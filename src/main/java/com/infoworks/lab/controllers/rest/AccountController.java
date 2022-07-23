@@ -6,7 +6,6 @@ import com.infoworks.lab.domain.types.AccountType;
 import com.infoworks.lab.jjwt.JWTPayload;
 import com.infoworks.lab.jjwt.TokenValidator;
 import com.infoworks.lab.rest.models.Response;
-import com.infoworks.lab.rest.models.SearchQuery;
 import com.infoworks.lab.services.ledger.LedgerBook;
 import com.infoworks.lab.services.vaccount.CheckBalanceTask;
 import com.infoworks.lab.services.vaccount.CheckVAccountExistTask;
@@ -24,7 +23,10 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -223,42 +225,46 @@ public class AccountController {
 
     @GetMapping("/recent/transactions")
     public ResponseEntity<List<Map>> searchAll(@RequestHeader(HttpHeaders.AUTHORIZATION) String token
-                                    , @RequestParam("username") String username
-                                    , @RequestParam("prefix") String prefix) {
+            , @RequestParam("username") String username
+            , @RequestParam("prefix") String prefix) {
         //
-        String matcher = LedgerBook.getACNo(username, prefix);
+        final String matcher = LedgerBook.getACNo(username, prefix);
         List<Transaction> cashAccountTransactionList = ledgerBook.findTransactions(prefix, username);
-        int toIndex = cashAccountTransactionList.size() > 10 ? 10 : (cashAccountTransactionList.size() - 1);
+        int toIndex = cashAccountTransactionList.size() > 10
+                ? 10
+                : (cashAccountTransactionList.size() - 1);
         List<Map> data = cashAccountTransactionList.subList(0, toIndex)
                 .stream()
-                .map(transaction -> {
-                    Map<String, String> info = new HashMap<>();
-                    info.put("transaction-ref", transaction.getTransactionRef());
-                    Optional<TransactionLeg> tLeg = transaction.getLegs().stream()
-                            .filter(leg -> leg.getAccountRef().equalsIgnoreCase(matcher))
-                            .findFirst();
-                    if (tLeg.isPresent()){
-                        info.put("amount", tLeg.get().getAmount().getAmount().toPlainString());
-                        info.put("curr", tLeg.get().getAmount().getCurrency().getDisplayName());
-                        info.put("balance", tLeg.get().getBalance().toPlainString());
-                    }
-                    info.put("transaction-type", transaction.getTransactionType());
-                    info.put("transaction-date", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-                            .format(transaction.getTransactionDate()));
-                    return info;
-                }).collect(Collectors.toList());
+                .map(transaction -> convertTransactionIntoMap(transaction, matcher))
+                .collect(Collectors.toList());
         return ResponseEntity.ok().body(data);
     }
 
+    private Map<String, String> convertTransactionIntoMap(Transaction transaction, String matcher) {
+        Map<String, String> info = new HashMap<>();
+        info.put("transaction-ref", transaction.getTransactionRef());
+        Optional<TransactionLeg> tLeg = transaction.getLegs().stream()
+                .filter(leg -> leg.getAccountRef().equalsIgnoreCase(matcher))
+                .findFirst();
+        if (tLeg.isPresent()){
+            info.put("amount", tLeg.get().getAmount().getAmount().toPlainString());
+            info.put("curr", tLeg.get().getAmount().getCurrency().getDisplayName());
+            info.put("balance", tLeg.get().getBalance().toPlainString());
+        }
+        info.put("transaction-type", transaction.getTransactionType());
+        /*info.put("transaction-date", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+                .format(transaction.getTransactionDate()));*/
+        info.put("transaction-date", transaction.getTransactionDate().getTime() + "");
+        return info;
+    }
+
     @PostMapping("/search/transactions")
-    public ResponseEntity<List<Map>> search(@RequestHeader(HttpHeaders.AUTHORIZATION) String token
-                                    , @RequestBody TransHistoryQuery query) {
+    public ResponseEntity<List<Map<String, Object>>> search(@RequestHeader(HttpHeaders.AUTHORIZATION) String token
+            , @RequestParam("username") String username
+            , @RequestParam("prefix") String prefix
+            , @RequestBody TransHistoryQuery query) {
         //
-        List<Transaction> cashAccountTransactionList = ledgerBook.findTransactions("", "");
-        List<Map> data = cashAccountTransactionList.stream()
-                .map(transaction -> {
-                    return new HashMap();
-                }).collect(Collectors.toList());
+        List<Map<String, Object>> data = ledgerBook.findTransactions(prefix, username, query);
         return ResponseEntity.ok().body(data);
     }
 

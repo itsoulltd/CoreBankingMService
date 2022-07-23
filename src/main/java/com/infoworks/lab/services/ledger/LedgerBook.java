@@ -1,5 +1,15 @@
 package com.infoworks.lab.services.ledger;
 
+import com.infoworks.lab.domain.models.TransHistoryQuery;
+import com.it.soul.lab.sql.QueryExecutor;
+import com.it.soul.lab.sql.SQLExecutor;
+import com.it.soul.lab.sql.query.QueryType;
+import com.it.soul.lab.sql.query.SQLJoinQuery;
+import com.it.soul.lab.sql.query.SQLQuery;
+import com.it.soul.lab.sql.query.models.Operator;
+import com.it.soul.lab.sql.query.models.Predicate;
+import com.it.soul.lab.sql.query.models.Table;
+import com.it.soul.lab.sql.query.models.Where;
 import com.itsoul.lab.generalledger.entities.Money;
 import com.itsoul.lab.generalledger.entities.Transaction;
 import com.itsoul.lab.generalledger.entities.TransferRequest;
@@ -7,7 +17,11 @@ import com.itsoul.lab.ledgerbook.accounting.head.ChartOfAccounts;
 import com.itsoul.lab.ledgerbook.accounting.head.Ledger;
 import com.itsoul.lab.ledgerbook.connector.SourceConnector;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -192,5 +206,60 @@ public class LedgerBook {
         Ledger book = getLedger(chartOfAccounts);
         List<Transaction> cashAccountTransactionList = book.findTransactions(cash_account);
         return cashAccountTransactionList;
+    }
+
+    /**
+     * Select
+     *    th.transaction_ref
+     *  , th.transaction_type
+     *  , th.transaction_date
+     *  , tl.account_ref
+     *  , tl.amount
+     *  , tl.currency
+     *  , tl.balance
+     * from transaction_history as th
+     * Left Join transaction_leg as tl on (th.transaction_ref =  tl.transaction_ref)
+     * where 1
+     * and tl.account_ref = 'CASH@towhid'
+     * and tl.tenant_ref = 'my-app-id'
+     * and tl.client_ref = 'sa'
+     * order by th.transaction_date DESC;
+     */
+
+    public List<Map<String, Object>> findTransactions(String prefix, String username, TransHistoryQuery query) {
+        String cash_account = getACNo(username, prefix);
+        //
+        Predicate clause = new Where("tl.account_ref").isEqualTo(cash_account)
+                .and("tl.tenant_ref").isEqualTo(tenantID)
+                .and("tl.client_ref").isEqualTo(owner);
+        //TODO: Need to be full queryable:
+        if (query.get("from") != null){
+            clause.and("th.transaction_date").isGreaterThenOrEqual(query.get("from", String.class));
+        }
+        if (query.get("to") != null){
+            clause.and("th.transaction_date").isLessThenOrEqual(query.get("to", String.class));
+        }
+        if (query.get("type") != null){
+            clause.and("th.transaction_type").isLike("%"+ query.get("type", String.class)+"%");
+        }
+        //
+        SQLJoinQuery joins = new SQLQuery.Builder(QueryType.LEFT_JOIN)
+                .joinAsAlice("transaction_history", "th"
+                        , "transaction_ref", "transaction_type", "transaction_date")
+                .on("transaction_ref", "transaction_ref")
+                .joinAsAlice("transaction_leg", "tl"
+                        , "account_ref", "amount", "currency", "balance")
+                .where(clause)
+                .orderBy(Operator.DESC, "th.transaction_date")
+                .build();
+        //joins.toString();
+        try (SQLExecutor executor = new SQLExecutor(connector.getConnection())) {
+            ResultSet set = executor.executeSelect(joins);
+            List<Map<String, Object>> data = executor.convertToKeyValuePair(set);
+            return data;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return new ArrayList<>();
     }
 }
