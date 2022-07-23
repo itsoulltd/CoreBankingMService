@@ -1,11 +1,13 @@
 package com.infoworks.lab.services.ledger;
 
 import com.itsoul.lab.generalledger.entities.Money;
+import com.itsoul.lab.generalledger.entities.Transaction;
 import com.itsoul.lab.generalledger.entities.TransferRequest;
 import com.itsoul.lab.ledgerbook.accounting.head.ChartOfAccounts;
 import com.itsoul.lab.ledgerbook.accounting.head.Ledger;
 import com.itsoul.lab.ledgerbook.connector.SourceConnector;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -180,5 +182,15 @@ public class LedgerBook {
 
     public static String generateTransactionRef(String username) {
         return UUID.randomUUID().toString().substring(0, 18);
+    }
+
+    public List<Transaction> findTransactions(String prefix, String username) {
+        String cash_account = getACNo(username, prefix);
+        ChartOfAccounts chartOfAccounts = new ChartOfAccounts.ChartOfAccountsBuilder()
+                .retrive(cash_account)
+                .build();
+        Ledger book = getLedger(chartOfAccounts);
+        List<Transaction> cashAccountTransactionList = book.findTransactions(cash_account);
+        return cashAccountTransactionList;
     }
 }

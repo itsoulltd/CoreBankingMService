@@ -9,11 +9,14 @@ import com.infoworks.lab.domain.types.AccountType;
 import com.infoworks.lab.jjwt.JWTPayload;
 import com.infoworks.lab.jjwt.TokenValidator;
 import com.infoworks.lab.rest.models.Response;
+import com.infoworks.lab.rest.models.SearchQuery;
 import com.infoworks.lab.services.ledger.LedgerBook;
 import com.infoworks.lab.services.vaccount.CheckBalanceTask;
 import com.infoworks.lab.services.vaccount.CheckVAccountExistTask;
 import com.infoworks.lab.services.vaccount.CreateChartOfAccountTask;
 import com.infoworks.lab.services.vaccount.MakeTransactionTask;
+import com.itsoul.lab.generalledger.entities.Transaction;
+import com.itsoul.lab.generalledger.entities.TransactionLeg;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -23,6 +26,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/account/v1")
@@ -87,6 +93,8 @@ public class AccountController {
             response.setError("Unauthorized Access By: " + transaction.getUsername());
             return ResponseEntity.unprocessableEntity().body(response);
         }
+        if(transaction.getType() == null || transaction.getType().isEmpty())
+            transaction.setType("transfer");
         //Now Make The Transaction-Flow
         TaskStack stack = TaskStack.createSync(true);
         stack.push(new MakeTransactionTask(ledgerBook, transaction));
@@ -214,6 +222,43 @@ public class AccountController {
         });
 
         return ResponseEntity.ok().body(response);
+    }
+
+    @GetMapping("/all/transactions")
+    public ResponseEntity<List<Map>> searchAll(@RequestHeader(HttpHeaders.AUTHORIZATION) String token
+                                    , @RequestParam("username") String username
+                                    , @RequestParam("prefix") String prefix) {
+        //
+        String matcher = LedgerBook.getACNo(username, prefix);
+        List<Transaction> cashAccountTransactionList = ledgerBook.findTransactions(prefix, username);
+        List<Map> data = cashAccountTransactionList.stream()
+                .map(transaction -> {
+                    Map<String, String> info = new HashMap<>();
+                    info.put("transaction-ref", transaction.getTransactionRef());
+                    Optional<TransactionLeg> tLeg = transaction.getLegs().stream()
+                            .filter(leg -> leg.getAccountRef().equalsIgnoreCase(matcher))
+                            .findFirst();
+                    if (tLeg.isPresent()){
+                        info.put("amount", tLeg.get().getAmount().getAmount().toPlainString());
+                        info.put("curr", tLeg.get().getAmount().getCurrency().getDisplayName());
+                        info.put("balance", tLeg.get().getBalance().toPlainString());
+                    }
+                    info.put("transaction-type", transaction.getTransactionType());
+                    info.put("transaction-date", new SimpleDateFormat("yyyy-MM-dd").format(transaction.getTransactionDate()));
+                    return info;
+                }).collect(Collectors.toList());
+        return ResponseEntity.ok().body(data);
+    }
+
+    public ResponseEntity<List<Map>> search(@RequestHeader(HttpHeaders.AUTHORIZATION) String token
+                                    , @RequestBody SearchQuery query) {
+        //
+        List<Transaction> cashAccountTransactionList = ledgerBook.findTransactions("", "");
+        List<Map> data = cashAccountTransactionList.stream()
+                .map(transaction -> {
+                    return new HashMap();
+                }).collect(Collectors.toList());
+        return ResponseEntity.ok().body(data);
     }
 
 }

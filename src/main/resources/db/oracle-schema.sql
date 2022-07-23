@@ -31,6 +31,7 @@ CREATE TABLE transaction_leg (
   account_ref VARCHAR2(20) NOT NULL,
   amount NUMBER(20,2) NOT NULL,
   currency VARCHAR2(3) NOT NULL,
+  balance NUMBER(20,2) NOT NULL,
   eventTimestamp VARCHAR2(512) NULL,
   signature VARCHAR2(512) NULL
 );
