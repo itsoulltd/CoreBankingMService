@@ -71,12 +71,14 @@ public class AccountController {
         stack.push(new CreateChartOfAccountTask(ledgerBook, createAccount)); //Event:A
         stack.push(new MakeTransactionTask(ledgerBook, deposit));            //Event:B
         stack.commit(true, (message, state) -> {
-            //
             if (message != null && (message instanceof  Response)){
                 int statusCode = ((Response) message).getStatus();
-                response.setError(null)
-                        .setStatus(statusCode)
-                        .setPayload(message.toString());
+                response.setError(null).setStatus(statusCode);
+            }
+            if (state == TaskStack.State.Finished){
+                response.setMessage("Account-Opening Has Been Successfully Executed!");
+            }else{
+                response.setMessage("Account-Opening Has Failed To Execute!");
             }
         });
         //
