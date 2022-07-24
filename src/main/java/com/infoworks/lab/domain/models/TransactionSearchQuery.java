@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.infoworks.lab.rest.models.SearchQuery;
 import com.infoworks.lab.rest.models.events.EventType;
 
-public class TransHistoryQuery extends SearchQuery {
+public class TransactionSearchQuery extends SearchQuery {
 
     @JsonIgnore private String uuid;
     @JsonIgnore private String timestamp;
@@ -19,7 +19,7 @@ public class TransHistoryQuery extends SearchQuery {
     }
 
     @Override
-    public TransHistoryQuery setUuid(String uuid) {
+    public TransactionSearchQuery setUuid(String uuid) {
         this.uuid = uuid;
         return this;
     }
@@ -30,7 +30,7 @@ public class TransHistoryQuery extends SearchQuery {
     }
 
     @Override
-    public TransHistoryQuery setTimestamp(String timestamp) {
+    public TransactionSearchQuery setTimestamp(String timestamp) {
         this.timestamp = timestamp;
         return this;
     }
@@ -41,7 +41,7 @@ public class TransHistoryQuery extends SearchQuery {
     }
 
     @Override
-    public TransHistoryQuery setEventType(EventType eventType) {
+    public TransactionSearchQuery setEventType(EventType eventType) {
         this.eventType = eventType;
         return this;
     }

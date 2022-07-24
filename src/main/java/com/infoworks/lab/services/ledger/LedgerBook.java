@@ -1,14 +1,12 @@
 package com.infoworks.lab.services.ledger;
 
-import com.infoworks.lab.domain.models.TransHistoryQuery;
-import com.it.soul.lab.sql.QueryExecutor;
+import com.infoworks.lab.domain.models.TransactionSearchQuery;
 import com.it.soul.lab.sql.SQLExecutor;
 import com.it.soul.lab.sql.query.QueryType;
 import com.it.soul.lab.sql.query.SQLJoinQuery;
 import com.it.soul.lab.sql.query.SQLQuery;
 import com.it.soul.lab.sql.query.models.Operator;
 import com.it.soul.lab.sql.query.models.Predicate;
-import com.it.soul.lab.sql.query.models.Table;
 import com.it.soul.lab.sql.query.models.Where;
 import com.itsoul.lab.generalledger.entities.Money;
 import com.itsoul.lab.generalledger.entities.Transaction;
@@ -226,7 +224,7 @@ public class LedgerBook {
      * order by th.transaction_date DESC;
      */
 
-    public List<Map<String, Object>> findTransactions(String prefix, String username, TransHistoryQuery query) {
+    public List<Map<String, Object>> findTransactions(String prefix, String username, TransactionSearchQuery query) {
         String cash_account = getACNo(username, prefix);
         //
         Predicate clause = new Where("tl.account_ref").isEqualTo(cash_account)

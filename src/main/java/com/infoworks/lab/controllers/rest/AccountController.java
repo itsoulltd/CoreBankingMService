@@ -22,7 +22,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -272,7 +271,7 @@ public class AccountController {
     public ResponseEntity<List<Map<String, Object>>> search(@RequestHeader(HttpHeaders.AUTHORIZATION) String token
             , @RequestParam("username") String username
             , @RequestParam("prefix") String prefix
-            , @RequestBody TransHistoryQuery query) {
+            , @RequestBody TransactionSearchQuery query) {
         //
         List<Map<String, Object>> data = ledgerBook.findTransactions(prefix, username, query);
         return ResponseEntity.ok().body(data);
