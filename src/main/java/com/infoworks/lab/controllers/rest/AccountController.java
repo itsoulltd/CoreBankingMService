@@ -59,9 +59,19 @@ public class AccountController {
             return ResponseEntity.unprocessableEntity().body(response);
         }
         //
+        MakeDeposit deposit = new MakeDeposit();
+        deposit.unmarshallingFromMap(createAccount.marshallingToMap(true), true);
+        deposit.setPrefix("CASH");
+        deposit.setFrom("CASH@" + AccountType.MASTER.value());
+        deposit.setType("deposit");
+        deposit.setTo(LedgerBook.getACNo(createAccount.getUsername(), createAccount.getPrefix()));
+        //Update create account amount with 0.00:
+        createAccount.setAmount("0.00");
+        //
         TaskStack stack = TaskStack.createSync(true);
         stack.push(new CreateChartOfAccountTask(ledgerBook, createAccount)); //Event:A
-        stack.commit(false, (message, state) -> {
+        stack.push(new MakeTransactionTask(ledgerBook, deposit));            //Event:B
+        stack.commit(true, (message, state) -> {
             //
             if (message != null && (message instanceof  Response)){
                 int statusCode = ((Response) message).getStatus();
@@ -71,7 +81,7 @@ public class AccountController {
             }
         });
         //
-        return ResponseEntity.unprocessableEntity().body(response);
+        return ResponseEntity.ok().body(response);
     }
 
     @PostMapping("/make/transaction")
