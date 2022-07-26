@@ -15,6 +15,7 @@ import com.itsoul.lab.generalledger.entities.Transaction;
 import com.itsoul.lab.generalledger.entities.TransactionLeg;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -33,11 +34,9 @@ import java.util.stream.Collectors;
 public class AccountController {
 
     private static Logger LOG = LoggerFactory.getLogger("AccountController");
-    private LedgerBook ledgerBook;
 
-    public AccountController(@Qualifier("GeneralLedger") LedgerBook ledgerBook) {
-        this.ledgerBook = ledgerBook;
-    }
+    @Autowired @Qualifier("GeneralLedger")
+    private LedgerBook ledgerBook;
 
     @PostMapping("/new/account")
     public ResponseEntity<Response> createVAccount(
