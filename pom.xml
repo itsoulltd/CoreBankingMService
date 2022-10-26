@@ -20,7 +20,8 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jersey2.version>2.27</jersey2.version>
-        <WebComponentKit.version>v1.12.5-RELEASE</WebComponentKit.version>
+        <jsqleditor.version>1.1.4.7-RELEASE</jsqleditor.version>
+        <WebComponentKit.version>v1.13.0-RELEASE</WebComponentKit.version>
         <spring-cloud.version>Greenwich.SR2</spring-cloud.version>
         <logstash-logback-encoder.version>6.1</logstash-logback-encoder.version>
     </properties>
@@ -126,7 +127,7 @@
         <dependency>
             <groupId>com.github.itsoulltd</groupId>
             <artifactId>JSQLEditor</artifactId>
-            <version>1.1.4.5-RELEASE</version>
+            <version>${jsqleditor.version}</version>
         </dependency>
         <dependency>
             <groupId>com.github.itsoulltd.WebComponentKit</groupId>
