@@ -102,8 +102,6 @@ public class AccountController {
             response.setError("Unauthorized Access By: " + transaction.getUsername());
             return ResponseEntity.unprocessableEntity().body(response);
         }
-        if(transaction.getType() == null || transaction.getType().isEmpty())
-            transaction.setType("transfer");
         //Now Make The Transaction-Flow
         TaskStack stack = TaskStack.createSync(true);
         stack.push(new MakeTransactionTask(ledgerBook, transaction));
