@@ -24,9 +24,7 @@ import javax.sql.DataSource;
 @EnableJpaRepositories(
         basePackages = {"com.infoworks.lab.domain.repositories"}
 )
-@PropertySource("classpath:oracle-db.properties")
-@PropertySource("classpath:mysql-db.properties")
-@PropertySource("classpath:h2-db.properties")
+@PropertySource("classpath:application-h2db.properties")
 public class PrimaryJPAConfig {
 
     private Environment env;
