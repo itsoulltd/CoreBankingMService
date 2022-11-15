@@ -225,9 +225,7 @@ public class LedgerBook {
 
     public List<Map<String, Object>> findTransactions(String prefix, String username, TransactionSearchQuery query) {
         String cash_account = getACNo(username, prefix);
-        Predicate clause = new Where("tl.account_ref").isEqualTo(cash_account)
-                .and("tl.tenant_ref").isEqualTo(tenantID)
-                .and("tl.client_ref").isEqualTo(owner);
+        Predicate clause = new Where("tl.account_ref").isEqualTo(cash_account);
         //Queryable- by Type, From-Date, To-Date
         if (query.get("type") != null){
             clause.and("th.transaction_type").isLike("%"+ query.get("type", String.class)+"%");
@@ -238,8 +236,8 @@ public class LedgerBook {
             clause.and("th.transaction_date").between(from, to);
         } else if (query.get("from") != null && query.get("till") != null) {
             String from = query.get("from", String.class);
-            String tillDate = minusADay(query.get("till", String.class), "yyyy-MM-dd");
-            clause.and("th.transaction_date").between(from, tillDate);
+            String till = minusADay(query.get("till", String.class), "yyyy-MM-dd");
+            clause.and("th.transaction_date").between(from, till);
         } else {
             if (query.get("from") != null) {
                 clause.and("th.transaction_date").isGreaterThenOrEqual(query.get("from", String.class));
@@ -250,6 +248,8 @@ public class LedgerBook {
             }
         }
         //
+        int limit = query.getSize() <= 0 ? 10 : query.getSize();
+        int offset = query.getPage() <= 0 ? 0 : ((query.getPage() - 1) * limit);
         SQLJoinQuery joins = new SQLQuery.Builder(QueryType.LEFT_JOIN)
                 .joinAsAlice("transaction_history", "th"
                         , "transaction_ref", "transaction_type", "transaction_date")
@@ -258,8 +258,10 @@ public class LedgerBook {
                         , "account_ref", "amount", "currency", "balance")
                 .where(clause)
                 .orderBy(Operator.DESC, "th.transaction_date")
+                .addLimit(limit, offset)
                 .build();
-        //joins.toString();
+        //
+        System.out.println(joins.toString());
         try (SQLExecutor executor = new SQLExecutor(connector.getConnection())) {
             ResultSet set = executor.executeSelect(joins);
             List<Map<String, Object>> data = executor.convertToKeyValuePair(set);

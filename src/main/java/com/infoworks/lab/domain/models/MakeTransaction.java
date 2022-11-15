@@ -8,7 +8,7 @@ public class MakeTransaction extends Transaction {
 
     @NotNull(message = "type must not be null. Any string less-then 20 char. e.g. transaction, purchase, transfer etc")
     @Length(max = 20, min = 1, message = "type has to be 1<=length<=20")
-    private String type;
+    private String type = "transfer";
 
     @NotNull(message = "to must not be null. Represent account_ref column of account table." +
             " Format: prefix@<username/account> e.g CASH@Master, REVENUE@Master, CASH@user-name, bKash@user-name, NAGAD@user-name")

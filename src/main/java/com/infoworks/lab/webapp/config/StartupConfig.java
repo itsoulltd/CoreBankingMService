@@ -32,10 +32,11 @@ public class StartupConfig implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
+        boolean notInitialized = true;
         try(SQLExecutor executor = new SQLExecutor(connector.getConnection())) {
-            if(executor.getScalerValue("SELECT COUNT(*) FROM account") >= 1) return;
-            initializeVAccount();
-        }
+            notInitialized = executor.getScalerValue("SELECT COUNT(*) FROM account") <= 0;
+        } catch (Exception e) {}
+        if (notInitialized) initializeVAccount();
     }
 
     private void initializeVAccount() throws SQLException {
