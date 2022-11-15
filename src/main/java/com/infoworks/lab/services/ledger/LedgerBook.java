@@ -17,10 +17,9 @@ import com.itsoul.lab.ledgerbook.connector.SourceConnector;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * This a thread-safe bean:
@@ -226,19 +225,29 @@ public class LedgerBook {
 
     public List<Map<String, Object>> findTransactions(String prefix, String username, TransactionSearchQuery query) {
         String cash_account = getACNo(username, prefix);
-        //
         Predicate clause = new Where("tl.account_ref").isEqualTo(cash_account)
                 .and("tl.tenant_ref").isEqualTo(tenantID)
                 .and("tl.client_ref").isEqualTo(owner);
-        //TODO: Need to be full queryable:
-        if (query.get("from") != null){
-            clause.and("th.transaction_date").isGreaterThenOrEqual(query.get("from", String.class));
-        }
-        if (query.get("to") != null){
-            clause.and("th.transaction_date").isLessThenOrEqual(query.get("to", String.class));
-        }
+        //Queryable- by Type, From-Date, To-Date
         if (query.get("type") != null){
             clause.and("th.transaction_type").isLike("%"+ query.get("type", String.class)+"%");
+        }
+        if (query.get("from") != null && query.get("to") != null) {
+            String from = query.get("from", String.class);
+            String to = query.get("to", String.class);
+            clause.and("th.transaction_date").between(from, to);
+        } else if (query.get("from") != null && query.get("till") != null) {
+            String from = query.get("from", String.class);
+            String tillDate = minusADay(query.get("till", String.class), "yyyy-MM-dd");
+            clause.and("th.transaction_date").between(from, tillDate);
+        } else {
+            if (query.get("from") != null) {
+                clause.and("th.transaction_date").isGreaterThenOrEqual(query.get("from", String.class));
+            } else if (query.get("to") != null) {
+                clause.and("th.transaction_date").isLessThenOrEqual(query.get("to", String.class));
+            } else if (query.get("till") != null) {
+                clause.and("th.transaction_date").isLessThen(query.get("till", String.class));
+            }
         }
         //
         SQLJoinQuery joins = new SQLQuery.Builder(QueryType.LEFT_JOIN)
@@ -256,8 +265,21 @@ public class LedgerBook {
             List<Map<String, Object>> data = executor.convertToKeyValuePair(set);
             return data;
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.out.println(e.getMessage());
         }
         return new ArrayList<>();
     }
+
+    private String minusADay(String date, String dateFormat) {
+        if (Objects.isNull(date) || date.isEmpty()) dateFormat = "yyyy-MM-dd";
+        try {
+            Calendar cal = Calendar.getInstance();
+            SimpleDateFormat format = new SimpleDateFormat(dateFormat);
+            cal.setTime(format.parse(date));
+            cal.add(Calendar.DAY_OF_MONTH, -1);
+            date = format.format(cal.getTime());
+        } catch (ParseException e) {}
+        return date;
+    }
+
 }
