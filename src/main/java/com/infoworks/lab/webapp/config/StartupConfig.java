@@ -8,6 +8,7 @@ import com.infoworks.lab.rest.models.Response;
 import com.infoworks.lab.services.ledger.LedgerBook;
 import com.infoworks.lab.services.vaccount.CreateChartOfAccountTask;
 import com.infoworks.lab.services.vaccount.InitializeVAccountDB;
+import com.it.soul.lab.sql.SQLExecutor;
 import com.itsoul.lab.ledgerbook.connector.SourceConnector;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -31,7 +32,10 @@ public class StartupConfig implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        initializeVAccount();
+        try(SQLExecutor executor = new SQLExecutor(connector.getConnection())) {
+            if(executor.getScalerValue("SELECT COUNT(*) FROM account") >= 1) return;
+            initializeVAccount();
+        }
     }
 
     private void initializeVAccount() throws SQLException {
