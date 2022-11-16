@@ -3,12 +3,14 @@ package com.infoworks.lab.domain.models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.validator.constraints.Length;
 
-public class Transaction extends CreateAccount {
+import javax.validation.constraints.NotNull;
 
+public class Transaction extends CreateAccount {
     @JsonIgnore private String accountType;
 
+    @NotNull(message = "type must not be null. Any string less-then 20 char. e.g. transaction, purchase, transfer etc")
+    @Length(max = 20, min = 1, message = "type has to be 1<=length<=20")
     private String type;
-    private String to;
 
     /**
      * If null then, we will generate this.
@@ -23,6 +25,8 @@ public class Transaction extends CreateAccount {
     @JsonIgnore
     @Length(max = 20, min = 1, message = "from has to be 1<=length<=20")
     private String from;
+
+    private String to;
 
     public String getType() {
         return type;
@@ -54,5 +58,15 @@ public class Transaction extends CreateAccount {
 
     public void setTo(String to) {
         this.to = to;
+    }
+
+    @Override
+    public String getAccountType() {
+        return accountType;
+    }
+
+    @Override
+    public void setAccountType(String accountType) {
+        this.accountType = accountType;
     }
 }

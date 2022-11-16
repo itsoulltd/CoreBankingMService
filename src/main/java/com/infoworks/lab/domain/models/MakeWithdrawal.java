@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public class MakeWithdrawal extends Transaction {
     @JsonIgnore private String prefix;
     @JsonIgnore private String to;
-    @JsonIgnore private String type;
+    @JsonIgnore private String type = "withdrawal";
     @JsonIgnore private String from;
 
     public String getTo() {

@@ -136,7 +136,6 @@ public class AccountController {
         }
         transaction.setPrefix("CASH");
         transaction.setFrom("CASH@" + AccountType.MASTER.value());
-        transaction.setType("deposit");
         transaction.setTo(LedgerBook.getACNo(transaction.getUsername(), transaction.getPrefix()));
         //Now Make The Transaction-Flow
         TaskStack stack = TaskStack.createSync(true);
@@ -172,7 +171,6 @@ public class AccountController {
         }
         transaction.setPrefix("CASH");
         transaction.setTo("CASH@" + AccountType.MASTER.value());
-        transaction.setType("withdrawal");
         //Now Make The Transaction-Flow
         TaskStack stack = TaskStack.createSync(true);
         stack.push(new MakeTransactionTask(ledgerBook, transaction));
