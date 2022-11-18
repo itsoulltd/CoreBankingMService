@@ -232,11 +232,11 @@ public class LedgerBook {
         }
         if (query.get("from") != null && query.get("to") != null) {
             String from = query.get("from", String.class);
-            String to = query.get("to", String.class);
+            String to = minusADay(query.get("to", String.class), "yyyy-MM-dd");
             clause.and("th.transaction_date").between(from, to);
         } else if (query.get("from") != null && query.get("till") != null) {
             String from = query.get("from", String.class);
-            String till = minusADay(query.get("till", String.class), "yyyy-MM-dd");
+            String till = query.get("till", String.class);
             clause.and("th.transaction_date").between(from, till);
         } else {
             if (query.get("from") != null) {
