@@ -242,9 +242,9 @@ public class LedgerBook {
             if (query.get("from") != null) {
                 clause.and("th.transaction_date").isGreaterThenOrEqual(query.get("from", String.class));
             } else if (query.get("to") != null) {
-                clause.and("th.transaction_date").isLessThenOrEqual(query.get("to", String.class));
+                clause.and("th.transaction_date").isLessThen(query.get("to", String.class));
             } else if (query.get("till") != null) {
-                clause.and("th.transaction_date").isLessThen(query.get("till", String.class));
+                clause.and("th.transaction_date").isLessThenOrEqual(query.get("till", String.class));
             }
         }
         //
