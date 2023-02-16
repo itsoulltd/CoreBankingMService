@@ -8,6 +8,7 @@ import com.it.soul.lab.sql.query.SQLQuery;
 import com.it.soul.lab.sql.query.models.Operator;
 import com.it.soul.lab.sql.query.models.Predicate;
 import com.it.soul.lab.sql.query.models.Where;
+import com.itsoul.lab.generalledger.entities.AccountingType;
 import com.itsoul.lab.generalledger.entities.Money;
 import com.itsoul.lab.generalledger.entities.Transaction;
 import com.itsoul.lab.generalledger.entities.TransferRequest;
@@ -111,7 +112,16 @@ public class LedgerBook {
             , String ref
             , String from
             , String amount
-            , String to) throws RuntimeException{
+            , String to) throws RuntimeException {
+        return makeTransactions(type, ref, AccountingType.Liability, from, amount, to);
+    }
+
+    public Money makeTransactions(String type
+            , String ref
+            , AccountingType accType
+            , String from
+            , String amount
+            , String to) throws RuntimeException {
         //
         Ledger book = null;
         try {
@@ -126,7 +136,7 @@ public class LedgerBook {
             //Transfer request:
             TransferRequest transferRequest1 = book.createTransferRequest()
                     .reference(validateTransactionRef(ref))
-                    .type(type)
+                    .type(type, accType)
                     .account(from).debit(amount, currency)
                     .account(to).credit(amount, currency)
                     .build();
@@ -228,7 +238,7 @@ public class LedgerBook {
         Predicate clause = new Where("tl.account_ref").isEqualTo(cash_account);
         //Queryable- by Type, From-Date, To-Date
         if (query.get("type") != null){
-            clause.and("th.transaction_type").isLike("%"+ query.get("type", String.class)+"%");
+            clause.and("th.transaction_type").isLike("%" + query.get("type", String.class) + "%");
         }
         if (query.get("from") != null && query.get("to") != null) {
             String from = query.get("from", String.class);
@@ -261,7 +271,6 @@ public class LedgerBook {
                 .addLimit(limit, offset)
                 .build();
         //
-        System.out.println(joins.toString());
         try (SQLExecutor executor = new SQLExecutor(connector.getConnection())) {
             ResultSet set = executor.executeSelect(joins);
             List<Map<String, Object>> data = executor.convertToKeyValuePair(set);
