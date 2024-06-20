@@ -86,10 +86,7 @@
 
 ####Some points:
 
-    Honestly speaking, I am always packed with quite convincing number of production ready start-up code,
-    ranging from back-end microservices to front-end applications.
-    When ever I do some RnD on a specific technology, eventually I do wapped my work in a production ready startup code-base.
-    Feel free to browse some of them:
+    Feel free to browse some of these:
     Spring-Boot Microservice Apps: (https://github.com/itsoulltd/WebAppStarterProjects)
     Web-Frontend Apps: (https://github.com/itsoulltd/WebUIAppStarterProjects)
     iOS-Startup App: (https://github.com/itsoulltd/StartUp-IOS)
