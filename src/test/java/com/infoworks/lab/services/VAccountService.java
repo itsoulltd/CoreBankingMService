@@ -14,16 +14,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class VAccountServiceV2 {
+public class VAccountService {
 
     private RestTemplate template;
     private String token;
 
-    public VAccountServiceV2(RestTemplate template) {
+    public VAccountService(RestTemplate template) {
         this.template = template;
     }
 
-    public VAccountServiceV2(RestTemplate template, String token) {
+    public VAccountService(RestTemplate template, String token) {
         this(template);
         this.token = token;
     }
@@ -198,80 +198,6 @@ public class VAccountServiceV2 {
         //https://localhost/api/account/v2/make/transaction
         StringBuilder rootUri = new StringBuilder(((RootUriTemplateHandler)template.getUriTemplateHandler()).getRootUri());
         rootUri.append("/make/transaction");
-        ResponseEntity<Response> rs = template.exchange(rootUri.toString()
-                , HttpMethod.POST
-                , entity
-                , Response.class);
-        return rs.getBody();
-    }
-
-    /**
-     * MakeTransactionOnHandover
-     * @param prefix e.g. 'CASH', 'REVENUE'
-     * @param username e.g. user-name that need to be remember.
-     * @param currency e.g. BDT, USD, EUR etc
-     * @param amount e.g. 1.00 or 12.09 or 0.00 or Any sum with at least 2 digit after precision.
-     * @param to pattern: prefix@username. e.g. CASH@sohana, CASH@Master, REVENUE@Master etc
-     * @param baseCharge e.g. 1.00 or 12.09 or 0.00 or Any sum with at least 2 digit after precision.
-     * @param serviceCharge e.g. 1.00 or 12.09 or 0.00 or Any sum with at least 2 digit after precision.
-     * @return
-     * @throws RuntimeException
-     */
-    public Response makeTransactionOnHandover(String prefix
-            , String username
-            , String currency
-            , String amount
-            , String to, String baseCharge, String serviceCharge) throws RuntimeException {
-        HttpHeaders headers = createHeaderFrom(getToken());
-        Map body = new HashMap();
-        body.put("prefix", prefix);
-        body.put("username", username);
-        body.put("currency", currency);
-        body.put("amount", amount);
-        body.put("to", to);
-        body.put("baseCharge", baseCharge);
-        body.put("serviceCharge", serviceCharge);
-        HttpEntity<Map> entity = new HttpEntity<>(body, headers);
-        //https://localhost/api/account/v2/make/transaction/on/handover
-        StringBuilder rootUri = new StringBuilder(((RootUriTemplateHandler)template.getUriTemplateHandler()).getRootUri());
-        rootUri.append("/make/transaction/on/handover");
-        ResponseEntity<Response> rs = template.exchange(rootUri.toString()
-                , HttpMethod.POST
-                , entity
-                , Response.class);
-        return rs.getBody();
-    }
-
-    /**
-     * MakeTransactionOnCompletion
-     * @param prefix e.g. 'CASH', 'REVENUE'
-     * @param username e.g. user-name that need to be remember.
-     * @param currency e.g. BDT, USD, EUR etc
-     * @param amount e.g. 1.00 or 12.09 or 0.00 or Any sum with at least 2 digit after precision.
-     * @param to pattern: prefix@username. e.g. CASH@sohana, CASH@Master, REVENUE@Master etc
-     * @param baseCharge e.g. 1.00 or 12.09 or 0.00 or Any sum with at least 2 digit after precision.
-     * @param serviceCharge e.g. 1.00 or 12.09 or 0.00 or Any sum with at least 2 digit after precision.
-     * @return
-     * @throws RuntimeException
-     */
-    public Response makeTransactionOnCompletion(String prefix
-            , String username
-            , String currency
-            , String amount
-            , String to, String baseCharge, String serviceCharge) throws RuntimeException {
-        HttpHeaders headers = createHeaderFrom(getToken());
-        Map body = new HashMap();
-        body.put("prefix", prefix);
-        body.put("username", username);
-        body.put("currency", currency);
-        body.put("amount", amount);
-        body.put("to", to);
-        body.put("baseCharge", baseCharge);
-        body.put("serviceCharge", serviceCharge);
-        HttpEntity<Map> entity = new HttpEntity<>(body, headers);
-        //https://localhost/api/account/v2/make/transaction/on/completion
-        StringBuilder rootUri = new StringBuilder(((RootUriTemplateHandler)template.getUriTemplateHandler()).getRootUri());
-        rootUri.append("/make/transaction/on/completion");
         ResponseEntity<Response> rs = template.exchange(rootUri.toString()
                 , HttpMethod.POST
                 , entity

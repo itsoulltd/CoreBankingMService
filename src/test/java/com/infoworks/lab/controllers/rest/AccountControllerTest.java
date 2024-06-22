@@ -7,7 +7,7 @@ import com.infoworks.lab.jwtoken.services.JWTokenProvider;
 import com.infoworks.lab.rest.models.Response;
 import com.infoworks.lab.rest.models.SearchQuery;
 import com.infoworks.lab.services.VAccountResponseParser;
-import com.infoworks.lab.services.VAccountServiceV2;
+import com.infoworks.lab.services.VAccountService;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-public class AccountControllerV2Test {
+public class AccountControllerTest {
 
     String tokenPayload = "{\"password\": \"1234\"\n" +
             ", \"role\": \"User\"\n" +
@@ -59,7 +59,7 @@ public class AccountControllerV2Test {
         RestTemplate restTemplate = new RestTemplateBuilder()
                 .rootUri("http://localhost:8086/api/account/v2")
                 .build();
-        VAccountServiceV2 service = new VAccountServiceV2(restTemplate, jwtToken);
+        VAccountService service = new VAccountService(restTemplate, jwtToken);
         //
         Response response = service.accountExist("CASH", "giko");
         boolean isExist = VAccountResponseParser.isExist(response);
@@ -96,7 +96,7 @@ public class AccountControllerV2Test {
                 .rootUri("http://localhost:8086/api/account/v2")
                 .build();
         //
-        VAccountServiceV2 service = new VAccountServiceV2(restTemplate, jwtToken);
+        VAccountService service = new VAccountService(restTemplate, jwtToken);
         //Check isExist?
         Response response = service.accountExist("CASH", "giko");
         boolean isExist = VAccountResponseParser.isExist(response);
@@ -120,7 +120,7 @@ public class AccountControllerV2Test {
         RestTemplate restTemplate = new RestTemplateBuilder()
                 .rootUri("http://localhost:8086/api/account/v2")
                 .build();
-        VAccountServiceV2 service = new VAccountServiceV2(restTemplate, jwtToken);
+        VAccountService service = new VAccountService(restTemplate, jwtToken);
         //
         Response response = service.accountExist("CASH", "giko");
         boolean isGikoExist = VAccountResponseParser.isExist(response);
@@ -149,7 +149,7 @@ public class AccountControllerV2Test {
                 .rootUri("http://localhost:8086/api/account/v2")
                 .build();
         //
-        VAccountServiceV2 service = new VAccountServiceV2(restTemplate, jwtToken);
+        VAccountService service = new VAccountService(restTemplate, jwtToken);
         //Check isExist?
         Response response = service.accountExist("CASH", "giko");
         boolean isExist = VAccountResponseParser.isExist(response);
@@ -174,7 +174,7 @@ public class AccountControllerV2Test {
                 .rootUri("http://localhost:8086/api/account/v2")
                 .build();
         //
-        VAccountServiceV2 service = new VAccountServiceV2(restTemplate, jwtToken);
+        VAccountService service = new VAccountService(restTemplate, jwtToken);
         //Check isExist?
         Response response = service.accountExist("CASH", "nikku");
         boolean isExist = VAccountResponseParser.isExist(response);
@@ -207,7 +207,7 @@ public class AccountControllerV2Test {
                 .rootUri("http://localhost:8086/api/account/v2")
                 .build();
         //
-        VAccountServiceV2 service = new VAccountServiceV2(restTemplate, jwtToken);
+        VAccountService service = new VAccountService(restTemplate, jwtToken);
         Response response = service.accountBalance("CASH", "Master");
         Assert.assertTrue(response.getStatus() == 200);
         System.out.println(response.getPayload());
@@ -223,7 +223,7 @@ public class AccountControllerV2Test {
                 .rootUri("http://localhost:8086/api/account/v2")
                 .build();
         //
-        VAccountServiceV2 service = new VAccountServiceV2(restTemplate, jwtToken);
+        VAccountService service = new VAccountService(restTemplate, jwtToken);
         Response response = service.accountExist("CASH", "Master");
         Assert.assertTrue(response.getStatus() == 200);
         System.out.println(response.getPayload());
@@ -240,7 +240,7 @@ public class AccountControllerV2Test {
                 .build();
         //
         try {
-            VAccountServiceV2 service = new VAccountServiceV2(restTemplate, jwtToken);
+            VAccountService service = new VAccountService(restTemplate, jwtToken);
             List<Map> response = service.recentTransactions("CASH", "Master");
             Assert.assertTrue(response.size() >= 0);
             response.forEach(trans -> System.out.println(trans));
@@ -265,7 +265,7 @@ public class AccountControllerV2Test {
                 //.and("till").isEqualTo("2022-08-20");
                 //.and("to").isLessThen("2023-04-18");
         try {
-            VAccountServiceV2 service = new VAccountServiceV2(restTemplate, jwtToken);
+            VAccountService service = new VAccountService(restTemplate, jwtToken);
             List<Map> response = service.searchTransactions("CASH", "Master", query);
             Assert.assertTrue(response.size() >= 0);
             response.forEach(trans -> System.out.println(trans));
@@ -284,7 +284,7 @@ public class AccountControllerV2Test {
         RestTemplate restTemplate = new RestTemplateBuilder()
                 .rootUri("http://localhost:8086/api/account/v2")
                 .build();
-        VAccountServiceV2 service = new VAccountServiceV2(restTemplate, jwtToken);
+        VAccountService service = new VAccountService(restTemplate, jwtToken);
         //
         boolean isExist = VAccountResponseParser.isExist(service.accountExist(prefix, username));
         if (!isExist) {
@@ -303,7 +303,7 @@ public class AccountControllerV2Test {
         RestTemplate restTemplate = new RestTemplateBuilder()
                 .rootUri("http://localhost:8086/api/account/v2")
                 .build();
-        VAccountServiceV2 service = new VAccountServiceV2(restTemplate, jwtToken);
+        VAccountService service = new VAccountService(restTemplate, jwtToken);
         //
         boolean isExist = VAccountResponseParser.isExist(service.accountExist(prefix, username));
         if (!isExist) {
@@ -329,7 +329,7 @@ public class AccountControllerV2Test {
         RestTemplate restTemplate = new RestTemplateBuilder()
                 .rootUri("http://localhost:8086/api/account/v2")
                 .build();
-        VAccountServiceV2 service = new VAccountServiceV2(restTemplate, jwtToken);
+        VAccountService service = new VAccountService(restTemplate, jwtToken);
         //
         boolean isSenderExist = VAccountResponseParser.isExist(service.accountExist(prefix, sender));
         if (!isSenderExist) {
@@ -362,7 +362,7 @@ public class AccountControllerV2Test {
         RestTemplate restTemplate = new RestTemplateBuilder()
                 .rootUri("http://localhost:8086/api/account/v2")
                 .build();
-        VAccountServiceV2 service = new VAccountServiceV2(restTemplate, jwtToken);
+        VAccountService service = new VAccountService(restTemplate, jwtToken);
         //
         boolean isSenderExist = VAccountResponseParser.isExist(service.accountExist(prefix, sender));
         if (!isSenderExist) {
@@ -406,7 +406,7 @@ public class AccountControllerV2Test {
         RestTemplate restTemplate = new RestTemplateBuilder()
                 .rootUri("http://localhost:8086/api/account/v2")
                 .build();
-        VAccountServiceV2 service = new VAccountServiceV2(restTemplate, jwtToken);
+        VAccountService service = new VAccountService(restTemplate, jwtToken);
         //
         boolean isExist = VAccountResponseParser.isExist(service.accountExist(prefix, username));
         if (!isExist) {
@@ -429,7 +429,7 @@ public class AccountControllerV2Test {
         RestTemplate restTemplate = new RestTemplateBuilder()
                 .rootUri("http://localhost:8086/api/account/v2")
                 .build();
-        VAccountServiceV2 service = new VAccountServiceV2(restTemplate, jwtToken);
+        VAccountService service = new VAccountService(restTemplate, jwtToken);
         //
         boolean isExist = VAccountResponseParser.isExist(service.accountExist(prefix, username));
         if (!isExist) {
@@ -447,15 +447,4 @@ public class AccountControllerV2Test {
         }
     }
 
-    @Test
-    public void makeTransactionOnHandover() {
-        //Create 2 accounts: one for company and another for a rider
-        //Rider goto customer home and deliver the package.
-    }
-
-    @Test
-    public void makeTransactionOnComplete() {
-        //Create 2 accounts: one for company and another for a rider
-        //Rider goto customer home and deliver the package.
-    }
 }
