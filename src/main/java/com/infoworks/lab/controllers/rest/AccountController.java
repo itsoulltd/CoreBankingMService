@@ -83,7 +83,7 @@ public class AccountController {
     @PostMapping("/make/transaction")
     public ResponseEntity<Response> makeTransactions(
             @RequestHeader(HttpHeaders.AUTHORIZATION) String token
-            ,@Valid @RequestBody MakeTransaction transaction){
+            , @Valid @RequestBody MakeTransaction transaction){
         //
         Response response = new Response()
                 .setMessage("Successfully Enqueued for Processing.")
@@ -100,8 +100,9 @@ public class AccountController {
         }
         //Now Make The Transaction-Flow
         TaskStack stack = TaskStack.createSync(true);
+        stack.push(new CheckBalanceTask(ledgerBook, transaction.getUsername(), transaction.getPrefix()));
         stack.push(new MakeTransactionTask(ledgerBook, transaction));
-        stack.commit(false, (message, state) -> {
+        stack.commit(true, (message, state) -> {
             if (state == TaskStack.State.Finished){
                 response.setMessage("Transaction Has Successfully Executed!");
             }else{
@@ -150,7 +151,7 @@ public class AccountController {
     @PostMapping("/make/withdrawal")
     public ResponseEntity<Response> makeWithdrawal(
             @RequestHeader(HttpHeaders.AUTHORIZATION) String token
-            ,@Valid @RequestBody MakeWithdrawal transaction){
+            , @Valid @RequestBody MakeWithdrawal transaction){
         //
         Response response = new Response()
                 .setMessage("Successfully Enqueued for Processing.")
@@ -169,8 +170,9 @@ public class AccountController {
         transaction.setTo("CASH@" + AccountType.MASTER.value());
         //Now Make The Transaction-Flow
         TaskStack stack = TaskStack.createSync(true);
+        stack.push(new CheckBalanceTask(ledgerBook, transaction.getUsername(), transaction.getPrefix()));
         stack.push(new MakeTransactionTask(ledgerBook, transaction));
-        stack.commit(false, (message, state) -> {
+        stack.commit(true, (message, state) -> {
             if (state == TaskStack.State.Finished){
                 response.setMessage("Withdrawal Has Successfully Executed!");
             }else{
@@ -184,8 +186,8 @@ public class AccountController {
     @GetMapping("/balance")
     public ResponseEntity<Response> checkAccountBalance(
             @RequestHeader(HttpHeaders.AUTHORIZATION) String token
-            ,@RequestParam("username") String username
-            ,@RequestParam("prefix") String prefix){
+            , @RequestParam("username") String username
+            , @RequestParam(name = "prefix", required = false, defaultValue = "CASH") String prefix){
         //
         Response response = new Response()
                 .setError("Not Implemented")
@@ -206,8 +208,8 @@ public class AccountController {
     @GetMapping("/exist")
     public ResponseEntity<Response> checkAccountExist(
             @RequestHeader(HttpHeaders.AUTHORIZATION) String token
-            ,@RequestParam("username") String username
-            ,@RequestParam("prefix") String prefix){
+            , @RequestParam("username") String username
+            , @RequestParam(name = "prefix", required = false, defaultValue = "CASH") String prefix){
         //
         Response response = new Response()
                 .setError("Not Implemented")
@@ -228,10 +230,13 @@ public class AccountController {
     @GetMapping("/recent/transactions")
     public ResponseEntity<List<Map>> searchAll(@RequestHeader(HttpHeaders.AUTHORIZATION) String token
             , @RequestParam("username") String username
-            , @RequestParam("prefix") String prefix) {
+            , @RequestParam(name = "prefix", required = false, defaultValue = "CASH") String prefix) {
         //
         final String matcher = LedgerBook.getACNo(username, prefix);
         List<Transaction> cashAccountTransactionList = ledgerBook.findTransactions(prefix, username);
+        if (cashAccountTransactionList.isEmpty())
+            return ResponseEntity.notFound().build();
+        //
         int toIndex = cashAccountTransactionList.size() > 10
                 ? 10
                 : (cashAccountTransactionList.size() - 1);
@@ -245,7 +250,7 @@ public class AccountController {
     @PostMapping("/search/transactions")
     public ResponseEntity<List<Map<String, Object>>> search(@RequestHeader(HttpHeaders.AUTHORIZATION) String token
             , @RequestParam("username") String username
-            , @RequestParam("prefix") String prefix
+            , @RequestParam(name = "prefix", required = false, defaultValue = "CASH") String prefix
             , @RequestBody TransactionSearchQuery query) {
         //
         List<Map<String, Object>> data = ledgerBook.findTransactions(prefix, username, query);
