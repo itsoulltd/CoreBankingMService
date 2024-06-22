@@ -12,7 +12,6 @@ import com.infoworks.lab.services.vaccount.CheckVAccountExistTask;
 import com.infoworks.lab.services.vaccount.CreateChartOfAccountTask;
 import com.infoworks.lab.services.vaccount.MakeTransactionTask;
 import com.itsoul.lab.generalledger.entities.Transaction;
-import com.itsoul.lab.generalledger.entities.TransactionLeg;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -22,10 +21,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -240,27 +237,9 @@ public class AccountController {
                 : (cashAccountTransactionList.size() - 1);
         List<Map> data = cashAccountTransactionList.subList(0, toIndex)
                 .stream()
-                .map(transaction -> convertTransactionIntoMap(transaction, matcher))
+                .map(transaction -> ledgerBook.convertTransaction(transaction, matcher))
                 .collect(Collectors.toList());
         return ResponseEntity.ok().body(data);
-    }
-
-    private Map<String, String> convertTransactionIntoMap(Transaction transaction, String matcher) {
-        Map<String, String> info = new HashMap<>();
-        info.put("transaction-ref", transaction.getTransactionRef());
-        Optional<TransactionLeg> tLeg = transaction.getLegs().stream()
-                .filter(leg -> leg.getAccountRef().equalsIgnoreCase(matcher))
-                .findFirst();
-        if (tLeg.isPresent()){
-            info.put("amount", tLeg.get().getAmount().getAmount().toPlainString());
-            info.put("curr", tLeg.get().getAmount().getCurrency().getDisplayName());
-            info.put("balance", tLeg.get().getBalance().toPlainString());
-        }
-        info.put("transaction-type", transaction.getTransactionType());
-        /*info.put("transaction-date", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-                .format(transaction.getTransactionDate()));*/
-        info.put("transaction-date", transaction.getTransactionDate().getTime() + "");
-        return info;
     }
 
     @PostMapping("/search/transactions")

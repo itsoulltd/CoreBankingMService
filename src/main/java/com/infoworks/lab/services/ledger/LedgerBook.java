@@ -8,10 +8,7 @@ import com.it.soul.lab.sql.query.SQLQuery;
 import com.it.soul.lab.sql.query.models.Operator;
 import com.it.soul.lab.sql.query.models.Predicate;
 import com.it.soul.lab.sql.query.models.Where;
-import com.itsoul.lab.generalledger.entities.AccountingType;
-import com.itsoul.lab.generalledger.entities.Money;
-import com.itsoul.lab.generalledger.entities.Transaction;
-import com.itsoul.lab.generalledger.entities.TransferRequest;
+import com.itsoul.lab.generalledger.entities.*;
 import com.itsoul.lab.ledgerbook.accounting.head.ChartOfAccounts;
 import com.itsoul.lab.ledgerbook.accounting.head.Ledger;
 import com.itsoul.lab.ledgerbook.connector.SourceConnector;
@@ -213,6 +210,25 @@ public class LedgerBook {
         Ledger book = getLedger(chartOfAccounts);
         List<Transaction> cashAccountTransactionList = book.findTransactions(cash_account);
         return cashAccountTransactionList;
+    }
+
+    public Map<String, String> convertTransaction(Transaction transaction, String matcher) {
+        Map<String, String> info = new HashMap<>();
+        info.put("transaction-ref", transaction.getTransactionRef());
+        Optional<TransactionLeg> tLeg = transaction.getLegs().stream()
+                .filter(leg -> leg.getAccountRef().equalsIgnoreCase(matcher))
+                .findFirst();
+        if (tLeg.isPresent()){
+            info.put("amount", tLeg.get().getAmount().getAmount().toPlainString());
+            info.put("currency", tLeg.get().getAmount().getCurrency().getCurrencyCode());
+            info.put("currencyDisplayName", tLeg.get().getAmount().getCurrency().getDisplayName());
+            info.put("balance", tLeg.get().getBalance().toPlainString());
+        }
+        info.put("transaction-type", transaction.getTransactionType());
+        /*info.put("transaction-date", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+                .format(transaction.getTransactionDate()));*/
+        info.put("transaction-date", transaction.getTransactionDate().getTime() + "");
+        return info;
     }
 
     /**
