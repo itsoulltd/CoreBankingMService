@@ -7,6 +7,10 @@ import com.infoworks.lab.services.ledger.LedgerBook;
 import com.itsoul.lab.generalledger.entities.Money;
 import org.springframework.http.HttpStatus;
 
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.Map;
+
 public class MakeTransactionTask extends LedgerTask {
 
     private Transaction transaction;
@@ -26,7 +30,6 @@ public class MakeTransactionTask extends LedgerTask {
 
     @Override
     public Message execute(Message message) throws RuntimeException {
-
         Response response = new Response()
                 .setError("Not Implemented")
                 .setStatus(HttpStatus.BAD_REQUEST.value());
@@ -47,6 +50,8 @@ public class MakeTransactionTask extends LedgerTask {
         }
         //
         try {
+            checkInsufficientBalance(getTransaction(), message);
+
             Money money = getLedgerBook().makeTransactions(
                     getTransaction().getType()
                     , getTransaction().getRef()
@@ -56,10 +61,11 @@ public class MakeTransactionTask extends LedgerTask {
             );
 
             response.setPayload(String.format(
-                    "{\"title\":\"%s\",\"balance\":\"%s\",\"currency\":\"%s\"}"
+                    "{\"title\":\"%s\",\"balance\":\"%s\",\"currency\":\"%s\",\"currencyDisplayName\":\"%s\"}"
                     , getTransaction().getFrom()
-                    ,money.getAmount().toPlainString()
-                    ,money.getCurrency().getDisplayName())
+                    , money.getAmount().toPlainString()
+                    , money.getCurrency().getCurrencyCode()
+                    , money.getCurrency().getDisplayName())
             );
 
             return response.setStatus(HttpStatus.OK.value())
@@ -69,6 +75,21 @@ public class MakeTransactionTask extends LedgerTask {
         }catch (Exception e){
             throw new RuntimeException(e.getMessage());
         }
+    }
+
+    private void checkInsufficientBalance(Transaction transaction, Message message) throws RuntimeException {
+        if (transaction == null || transaction.getAmount() == null || transaction.getAmount().isEmpty()) return;
+        if (message == null || message.getPayload() == null || message.getPayload().isEmpty()) return;
+        try {
+            String amount = transaction.getAmount();
+            Map<String, Object> payload = Message.unmarshal(Map.class, message.getPayload());
+            if (payload.get("balance") == null || payload.get("balance").toString().isEmpty()) return;
+            String balance = payload.get("balance").toString();
+            //If amount is less-then balance, then throw Insufficient Balance Exception.
+            boolean insufficientBalance = new BigDecimal(balance).compareTo(new BigDecimal(amount)) == -1;
+            if (insufficientBalance)
+                throw new RuntimeException("Insufficient Balance!");
+        } catch (IOException e) {}
     }
 
     @Override

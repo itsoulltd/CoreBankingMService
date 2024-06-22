@@ -1,9 +1,9 @@
 package com.infoworks.lab.services.vaccount;
 
-import com.infoworks.lab.services.ledger.LedgerBook;
 import com.infoworks.lab.domain.models.CreateAccount;
 import com.infoworks.lab.rest.models.Message;
 import com.infoworks.lab.rest.models.Response;
+import com.infoworks.lab.services.ledger.LedgerBook;
 import com.it.soul.lab.sql.query.models.Property;
 import com.itsoul.lab.generalledger.entities.Money;
 import org.springframework.http.HttpStatus;
@@ -56,10 +56,12 @@ public class CheckBalanceTask extends LedgerTask {
             //
             String cash_account = LedgerBook.getACNo(getUsername(), getPrefix());
             Money money = getLedgerBook().readBalance(getPrefix(), getUsername());
-            response.setPayload(String.format("{\"title\":\"%s\",\"balance\":\"%s\",\"currency\":\"%s\"}"
+            response.setPayload(
+                    String.format("{\"title\":\"%s\",\"balance\":\"%s\",\"currency\":\"%s\",\"currencyDisplayName\":\"%s\"}"
                     , cash_account
-                    ,money.getAmount().toPlainString()
-                    ,money.getCurrency().getDisplayName()));
+                    , money.getAmount().toPlainString()
+                    , money.getCurrency().getCurrencyCode()
+                    , money.getCurrency().getDisplayName()));
             //
             return response.setError(null)
                     .setStatus(HttpStatus.OK.value());

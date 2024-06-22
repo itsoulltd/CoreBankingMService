@@ -11,7 +11,7 @@ import org.springframework.http.HttpStatus;
 import java.io.IOException;
 import java.math.BigDecimal;
 
-public class BalanceEnquireTask extends CheckBalanceTask{
+public class BalanceEnquireTask extends CheckBalanceTask {
 
     public BalanceEnquireTask(LedgerBook book) {super(book);}
 

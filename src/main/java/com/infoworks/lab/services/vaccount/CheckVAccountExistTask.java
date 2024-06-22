@@ -1,8 +1,8 @@
 package com.infoworks.lab.services.vaccount;
 
-import com.infoworks.lab.services.ledger.LedgerBook;
 import com.infoworks.lab.rest.models.Message;
 import com.infoworks.lab.rest.models.Response;
+import com.infoworks.lab.services.ledger.LedgerBook;
 import org.springframework.http.HttpStatus;
 
 public class CheckVAccountExistTask extends CheckBalanceTask {
