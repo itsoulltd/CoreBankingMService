@@ -24,12 +24,14 @@ import javax.sql.DataSource;
 @EnableJpaRepositories(
         basePackages = {"com.infoworks.lab.domain.repositories"}
 )
+@PropertySource("classpath:application-oracle.properties")
+@PropertySource("classpath:application-mysql.properties")
 @PropertySource("classpath:application-h2db.properties")
-public class PrimaryJPAConfig {
+public class JPAConfig {
 
     private Environment env;
 
-    public PrimaryJPAConfig(@Autowired Environment env) {
+    public JPAConfig(@Autowired Environment env) {
         this.env = env;
     }
 
