@@ -50,7 +50,7 @@ public class LedgerBook {
         Money money = null;
         Ledger book = null;
         try {
-            book = getLedger(chartOfAccounts);
+            book = initLedger(chartOfAccounts);
             money = Money.toMoney(deposit, currency);
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage());
@@ -76,7 +76,7 @@ public class LedgerBook {
         Money money = null;
         Ledger book = null;
         try {
-            book = getLedger(chartOfAccounts);
+            book = initLedger(chartOfAccounts);
             money = book.getAccountBalance(cash_account);
         } catch (Exception e) {
             money = Money.NULL_MONEY;
@@ -96,7 +96,7 @@ public class LedgerBook {
         Ledger book = null;
         boolean isExist = false;
         try{
-            book = getLedger(chartOfAccounts);
+            book = initLedger(chartOfAccounts);
             isExist = book.getAccountBalance(cash_account) != null;
         }catch (Exception e) {} finally {
             if (book != null)
@@ -128,7 +128,7 @@ public class LedgerBook {
                     .retrive(to)
                     .build();
             //
-            book = getLedger(chartOfAccounts);
+            book = initLedger(chartOfAccounts);
 
             //Transfer request:
             TransferRequest transferRequest1 = book.createTransferRequest()
@@ -150,7 +150,7 @@ public class LedgerBook {
         }
     }
 
-    private Ledger getLedger(ChartOfAccounts chartOfAccounts){
+    private Ledger initLedger(ChartOfAccounts chartOfAccounts){
         Ledger book = new Ledger.LedgerBuilder(chartOfAccounts)
                 .name("General Ledger")
                 .connector(getConnector())
@@ -207,7 +207,7 @@ public class LedgerBook {
         ChartOfAccounts chartOfAccounts = new ChartOfAccounts.ChartOfAccountsBuilder()
                 .retrive(cash_account)
                 .build();
-        Ledger book = getLedger(chartOfAccounts);
+        Ledger book = initLedger(chartOfAccounts);
         List<Transaction> cashAccountTransactionList = book.findTransactions(cash_account);
         return cashAccountTransactionList;
     }
