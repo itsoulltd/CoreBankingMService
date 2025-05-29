@@ -1,10 +1,14 @@
 package com.infoworks.lab.domain.repository;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.infoworks.lab.client.jersey.HttpTemplate;
 import com.infoworks.lab.config.ApplicationProperties;
 import com.infoworks.lab.config.RequestURI;
 import com.infoworks.lab.config.UserRole;
 import com.infoworks.lab.domain.entities.User;
+import com.infoworks.lab.domain.models.Authorization;
+import com.infoworks.lab.domain.models.Login;
+import com.infoworks.lab.domain.models.ResetPassword;
 import com.infoworks.lab.exceptions.HttpInvocationException;
 import com.infoworks.lab.jjwt.JWTHeader;
 import com.infoworks.lab.jjwt.JWTPayload;
@@ -12,11 +16,14 @@ import com.infoworks.lab.jjwt.TokenValidator;
 import com.infoworks.lab.jwtoken.definition.TokenProvider;
 import com.infoworks.lab.jwtoken.services.JWTokenProvider;
 import com.infoworks.lab.rest.models.Message;
+import com.infoworks.lab.rest.models.QueryParam;
 import com.infoworks.lab.rest.models.Response;
+import com.infoworks.lab.rest.template.Invocation;
 import com.it.soul.lab.sql.query.models.Property;
 import com.vaadin.flow.component.UI;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.BiConsumer;
@@ -166,42 +173,88 @@ public class AuthRepository extends HttpTemplate<Response, Message> {
     }
 
     public String login(String username , String password) throws HttpInvocationException, IOException {
-        return "";
+        /* /auth/v1/login */
+        Response response = post(new Login(username, password), "login");
+        Map<String, String> info = Message.unmarshal(new TypeReference<Map<String, String>>() {}, response.getMessage());
+        String token = info.get(X_AUTH_TOKEN);
+        return token;
     }
 
     public boolean isAccountExist(String username) throws IOException, HttpInvocationException {
-        return false;
+        /* /auth/v1/isAccountExist?username={username} */
+        javax.ws.rs.core.Response response = execute(null
+                , Invocation.Method.GET
+                , "isAccountExist", new QueryParam("username",username));
+        Response response1 = inflate(response, Response.class);
+        return response1.getStatus() == 200;
     }
 
     public boolean isCurrentTokenIsValid() throws IOException, HttpInvocationException {
-        return false;
+        Response response = isValidToken(parseToken(UI.getCurrent()));
+        return response.getStatus() == 200;
     }
 
     public Response isValidToken(String userToken) throws IOException, HttpInvocationException {
-        return new Response().setStatus(401);
+        /* /auth/v1/isValidToken */
+        Authorization authorization = new Authorization(userToken);
+        javax.ws.rs.core.Response response = execute(authorization
+                , Invocation.Method.GET
+                , "isValidToken");
+        String json = response.readEntity(String.class);
+        Response response1 = new Response().setMessage(json).setStatus(response.getStatus());
+        return response1;
     }
 
     public String refreshCurrentToken() throws IOException, HttpInvocationException {
-        return "";
+        return refreshToken(parseToken(UI.getCurrent()));
     }
 
     public String refreshToken(String userToken) throws IOException, HttpInvocationException {
-        return "";
+        /* /auth/v1/refreshToken */
+        Authorization authorization = new Authorization(userToken);
+        javax.ws.rs.core.Response response = execute(authorization
+                , Invocation.Method.GET
+                , "refreshToken");
+        Response response1 = inflate(response, Response.class);
+        Map<String, String> info = Message.unmarshal(new TypeReference<Map<String, String>>() {}, response1.getMessage());
+        String refresh = info.get(X_AUTH_TOKEN);
+        return refresh;
     }
 
     public Response forget(String username) throws IOException, HttpInvocationException {
-        return new Response().setStatus(401);
+        /* /auth/v1/forget?username={username} */
+        javax.ws.rs.core.Response response = execute(null
+                , Invocation.Method.GET
+                , "forget", new QueryParam("username", username));
+        Response response1 = inflate(response, Response.class);
+        return response1;
     }
 
     public String resetPassword(String forgetToken, String password) throws IOException, HttpInvocationException {
-        return "";
+        /* /auth/v1/forget/reset?password={password} */
+        Authorization authorization = new Authorization(forgetToken);
+        javax.ws.rs.core.Response response = execute(authorization
+                , Invocation.Method.POST
+                , "forget", "reset", new QueryParam("password", password));
+        Response response1 = inflate(response, Response.class);
+        Map<String, String> info = Message.unmarshal(new TypeReference<Map<String, String>>() {}, response1.getMessage());
+        String resetToken = info.get(X_AUTH_TOKEN);
+        return resetToken;
     }
 
     public String changePassword(String oldPass, String newPass) throws IOException, HttpInvocationException {
-        return "";
+        return changePassword(parseToken(UI.getCurrent()), oldPass, newPass);
     }
 
     public String changePassword(String userToken, String oldPass, String newPass) throws IOException, HttpInvocationException {
-        return "";
+        /* /auth/v1/reset */
+        ResetPassword reset = new ResetPassword(userToken, oldPass, newPass);
+        javax.ws.rs.core.Response response = execute(reset
+                , Invocation.Method.POST
+                , "reset");
+        Response response1 = inflate(response, Response.class);
+        Map<String, String> info = Message.unmarshal(new TypeReference<Map<String, String>>() {}, response1.getMessage());
+        String resetToken = info.get(X_AUTH_TOKEN);
+        return resetToken;
     }
 }
