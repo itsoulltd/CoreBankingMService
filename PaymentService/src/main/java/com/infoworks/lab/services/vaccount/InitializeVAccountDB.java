@@ -14,19 +14,29 @@ import java.sql.SQLException;
 
 public class InitializeVAccountDB extends LedgerTask {
 
-    private SourceConnector connector = null;
+    private SourceConnector connector;
+    private final String sourceDirectory;
     protected SourceConnector getConnector(){return connector;}
 
-    public InitializeVAccountDB(SourceConnector connector) {
+    public InitializeVAccountDB(String sourceDirectory, SourceConnector connector) {
         super(null);
         this.connector = connector;
+        this.sourceDirectory = (sourceDirectory == null || sourceDirectory.isEmpty())
+                ? "src" : sourceDirectory;
+    }
+
+    public InitializeVAccountDB(SourceConnector connector) {
+        this(null, connector);
     }
 
     @Override
     public Message execute(Message message) throws RuntimeException {Response response = new Response();
         SourceConnector connector = getConnector();
         ScriptRunner runner = new ScriptRunner();
-        Path path = Paths.get("src","main","resources");
+        String[] paths = sourceDirectory.equalsIgnoreCase("src")
+                ? new String[]{"main","resources"}
+                : new String[]{"src","main","resources"};
+        Path path = Paths.get(sourceDirectory, paths);
         String absolutePath = path.toFile().getAbsolutePath();
         File file = new File(absolutePath + "/" + connector.schema());
         //

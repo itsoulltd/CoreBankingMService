@@ -22,10 +22,10 @@ services:
       volumes:
           - mysql-db-storage:/var/lib/mysql
 
-   webapp-admin:
-       image: vaadin-starter-app:1.0
+   banking-app:
+       image: my-banking-app:1.0
        build:
-          context: .
+          context: ./MyBankingApp
           dockerfile: Dockerfile
        environment:
           app.display.name: MyApp
