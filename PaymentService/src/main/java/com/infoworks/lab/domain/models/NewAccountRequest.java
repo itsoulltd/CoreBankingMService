@@ -17,7 +17,7 @@ public class NewAccountRequest extends Message {
     @NotEmpty(message = "Username must not null or empty!")
     private String username;
 
-    @PasswordRule(mixLengthRule = 4, maxLengthRule = 8)
+    @PasswordRule(minLengthRule = 4, maxLengthRule = 8)
     @NotEmpty(message = "Password must not null or empty!")
     private String password;
 
