@@ -18,12 +18,17 @@ public class RequestURI {
     public static String AUTH_HOST = Optional.ofNullable(System.getenv("app.auth.host")).orElse("localhost");
     public static String AUTH_PORT = Optional.ofNullable(System.getenv("app.auth.port")).orElse("8080");
     public static String AUTH_BASE = RequestURI.SCHEMA_HTTP + RequestURI.AUTH_HOST + ":" + RequestURI.AUTH_PORT;
-    public static String AUTH_API = Optional.ofNullable(System.getenv("app.auth.login")).orElse("/api/auth/auth/v1");
+    public static String AUTH_API = Optional.ofNullable(System.getenv("app.auth.login")).orElse("/api/auth/v1");
 
     public static String USER_HOST = Optional.ofNullable(System.getenv("app.user.host")).orElse("localhost");
     public static String USER_PORT = Optional.ofNullable(System.getenv("app.user.port")).orElse("8080");
     public static String USER_BASE = RequestURI.SCHEMA_HTTP + RequestURI.USER_HOST + ":" + RequestURI.USER_PORT;
     public static String USER_API = Optional.ofNullable(System.getenv("app.user.api")).orElse("/api/user/v1");
+
+    public static String PAYMENT_HOST = Optional.ofNullable(System.getenv("app.payment.host")).orElse("localhost");
+    public static String PAYMENT_PORT = Optional.ofNullable(System.getenv("app.payment.port")).orElse("8080");
+    public static String PAYMENT_BASE = RequestURI.SCHEMA_HTTP + RequestURI.PAYMENT_HOST + ":" + RequestURI.PAYMENT_PORT;
+    public static String PAYMENT_API = Optional.ofNullable(System.getenv("app.payment.api")).orElse("/api/account/v1");
 
     //public static String ABC_XY = Optional.ofNullable(System.getenv("")).orElse("");
 
