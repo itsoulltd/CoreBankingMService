@@ -175,8 +175,9 @@ public class AuthRepository extends HttpTemplate<Response, Message> {
     public String login(String username , String password) throws HttpInvocationException, IOException {
         /* /auth/v1/login */
         Response response = post(new Login(username, password), "login");
-        Map<String, String> info = Message.unmarshal(new TypeReference<Map<String, String>>() {}, response.getMessage());
-        String token = info.get(X_AUTH_TOKEN);
+        //Map<String, String> info = Message.unmarshal(new TypeReference<Map<String, String>>() {}, response.getMessage());
+        //String token = info.get(X_AUTH_TOKEN);
+        String token = response.getMessage();
         return token;
     }
 
