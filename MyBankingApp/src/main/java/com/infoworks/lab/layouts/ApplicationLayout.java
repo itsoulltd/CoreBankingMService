@@ -124,7 +124,7 @@ public class ApplicationLayout extends AppLayout {
                 profile()
                 , trends()
                 , trendsCrud()
-                , trackerView()
+                //, trackerView()
                 , logout());
         tabs.setOrientation(Tabs.Orientation.VERTICAL);
         tabs.addSelectedChangeListener(event -> {
