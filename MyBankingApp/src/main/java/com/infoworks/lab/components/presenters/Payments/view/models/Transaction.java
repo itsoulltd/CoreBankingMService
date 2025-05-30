@@ -1,4 +1,4 @@
-package com.infoworks.lab.domain.models.payments;
+package com.infoworks.lab.components.presenters.Payments.view.models;
 
 import com.infoworks.lab.rest.models.events.Event;
 

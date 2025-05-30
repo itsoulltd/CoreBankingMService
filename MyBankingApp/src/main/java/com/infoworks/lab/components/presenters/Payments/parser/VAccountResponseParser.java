@@ -1,4 +1,4 @@
-package com.infoworks.lab.domain.models.payments;
+package com.infoworks.lab.components.presenters.Payments.parser;
 
 import com.infoworks.lab.rest.models.Message;
 import com.infoworks.lab.rest.models.Response;

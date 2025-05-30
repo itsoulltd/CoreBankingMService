@@ -1,7 +1,7 @@
 package com.infoworks.lab.components.presenters.Payments.tasks;
 
 import com.infoworks.lab.beans.tasks.rest.client.base.BaseRequest;
-import com.infoworks.lab.domain.models.payments.VAccountResponseParser;
+import com.infoworks.lab.components.presenters.Payments.parser.VAccountResponseParser;
 import com.infoworks.lab.domain.repository.VAccountRepository;
 import com.infoworks.lab.rest.models.Message;
 import com.infoworks.lab.rest.models.Response;

@@ -1,4 +1,4 @@
-package com.infoworks.lab.domain.models.payments;
+package com.infoworks.lab.components.presenters.Payments.view.models;
 
 public enum AccountPrefix {
     CASH,
