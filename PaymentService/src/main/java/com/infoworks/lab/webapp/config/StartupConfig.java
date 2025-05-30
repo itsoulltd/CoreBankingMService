@@ -10,7 +10,6 @@ import com.infoworks.lab.services.vaccount.CreateChartOfAccountTask;
 import com.infoworks.lab.services.vaccount.InitializeVAccountDB;
 import com.it.soul.lab.sql.SQLExecutor;
 import com.itsoul.lab.ledgerbook.connector.SourceConnector;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
@@ -47,10 +46,8 @@ public class StartupConfig implements CommandLineRunner {
     }
 
     private void initializeVAccount() throws SQLException {
-        //
         TaskQueue taskQueue = TaskQueue.createSync(true);
         InitializeVAccountDB task = new InitializeVAccountDB(appSrcDir, connector);
-        taskQueue.add(task);
         taskQueue.onTaskComplete((message, state) -> {
             if (message instanceof Response){
                 Response response = (Response) message;
@@ -64,10 +61,11 @@ public class StartupConfig implements CommandLineRunner {
                 }
             }
         });
+        //
+        taskQueue.add(task);
     }
 
     private void initializeMasterAccount() {
-        //
         CreateAccount cashAccount = new CreateAccount()
                 .setPrefix(AccountPrefix.CASH.name())
                 .setUsername(AccountType.MASTER.value())
@@ -81,8 +79,6 @@ public class StartupConfig implements CommandLineRunner {
         CreateChartOfAccountTask revenueTask = new CreateChartOfAccountTask(ledgerBook, revenueAccount);
         //
         TaskQueue taskQueue = TaskQueue.createSync(true);
-        taskQueue.add(cashTask);
-        taskQueue.add(revenueTask);
         taskQueue.onTaskComplete(((message, state) -> {
             //LOG.info("CASH#Master Account Creation: " + state.name());
             if (message != null && message instanceof Response){
@@ -90,5 +86,8 @@ public class StartupConfig implements CommandLineRunner {
                 LOG.info(response.toString());
             }
         }));
+        //
+        taskQueue.add(cashTask);
+        taskQueue.add(revenueTask);
     }
 }
