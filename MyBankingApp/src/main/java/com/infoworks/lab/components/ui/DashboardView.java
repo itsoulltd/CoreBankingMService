@@ -1,6 +1,7 @@
 package com.infoworks.lab.components.ui;
 
 import com.infoworks.lab.components.presenters.Payments.tasks.CreateAccountTask;
+import com.infoworks.lab.components.presenters.Payments.views.TransactionsView;
 import com.infoworks.lab.config.ApplicationProperties;
 import com.infoworks.lab.config.RestTemplateConfig;
 import com.infoworks.lab.domain.beans.queues.EventQueue;
@@ -101,14 +102,6 @@ public class DashboardView extends Composite<Div> {
         getContent().add(new Span("Create New Account"), layout);
     }
 
-    private void loadExistingAccount(AccountPrefix prefix, AccountType type, User user) {
-        if (getContent().getChildren().count() > 0){
-            getContent().removeAll();
-        }
-        //TODO:
-        getContent().add(new Span("Load Existing Account"));
-    }
-
     private CreateAccountTask createNewAccountTask(UI ui, User user, AccountPrefix prefix, AccountType type) {
         // First Check AccountName is null or empty;
         if (user.getName() == null
@@ -125,5 +118,21 @@ public class DashboardView extends Composite<Div> {
                 , "0.00");
         task.setRepository(repository);
         return task;
+    }
+
+    private void loadExistingAccount(AccountPrefix prefix, AccountType type, User user) {
+        if (getContent().getChildren().count() > 0){
+            getContent().removeAll();
+        }
+        //TransactionView:
+        TransactionsView transView = new TransactionsView();
+        getContent().add(transView);
+        //Fetch transactions:
+        UI ui = UI.getCurrent();
+        EventQueue.dispatch(200, TimeUnit.MILLISECONDS
+                , () -> ui.access(() -> {
+                    //Load Transactions for CASH@Username
+                    transView.update(ui, prefix.name(), user.getName());
+                }));
     }
 }

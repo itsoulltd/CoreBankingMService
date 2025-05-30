@@ -25,6 +25,8 @@ import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -35,6 +37,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class TransactionsView extends Composite<Div> {
+    private static Logger LOG = LoggerFactory.getLogger("TransactionsView");
     //Components:
     private HorizontalLayout navBar;
     private Grid<Transaction> mainView;
@@ -244,6 +247,7 @@ public class TransactionsView extends Composite<Div> {
             return transactions;
             //
         } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
             ui.access(() -> {
                 Notification notification = Notification.show(e.getLocalizedMessage());
                 notification.addThemeVariants(NotificationVariant.LUMO_ERROR);

@@ -2,7 +2,8 @@ package com.infoworks.lab.domain.models.payments;
 
 import com.infoworks.lab.rest.models.events.Event;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
 /**
@@ -108,10 +109,11 @@ public class Transaction extends Event {
         return Objects.hash(super.hashCode(), transaction_ref);
     }
 
-    public LocalDate getTransactionLocalDate() {
+    public LocalDateTime getTransactionLocalDate() {
         if (transaction_date != null && !transaction_date.isEmpty()) {
-            return LocalDate.parse(transaction_date);
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd''T''HH:mm:ss");
+            return LocalDateTime.parse(transaction_date, formatter);
         }
-        return LocalDate.now();
+        return LocalDateTime.now();
     }
 }
