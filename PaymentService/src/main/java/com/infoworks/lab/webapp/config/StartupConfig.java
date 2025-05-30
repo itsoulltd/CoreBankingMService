@@ -12,6 +12,7 @@ import com.it.soul.lab.sql.SQLExecutor;
 import com.itsoul.lab.ledgerbook.connector.SourceConnector;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -24,11 +25,17 @@ public class StartupConfig implements CommandLineRunner {
 
     private Logger LOG = Logger.getLogger(this.getClass().getSimpleName());
 
-    @Autowired @Qualifier("DSConnector")
     private SourceConnector connector;
-
-    @Autowired @Qualifier("GeneralLedger-Unscoped")
     private LedgerBook ledgerBook;
+    private String appSrcDir;
+
+    public StartupConfig(@Qualifier("DSConnector") SourceConnector connector
+            , @Qualifier("GeneralLedger-Unscoped") LedgerBook ledgerBook
+            , @Value("${app.src.directory}") String appSrcDir) {
+        this.connector = connector;
+        this.ledgerBook = ledgerBook;
+        this.appSrcDir = appSrcDir;
+    }
 
     @Override
     public void run(String... args) throws Exception {
@@ -42,7 +49,7 @@ public class StartupConfig implements CommandLineRunner {
     private void initializeVAccount() throws SQLException {
         //
         TaskQueue taskQueue = TaskQueue.createSync(true);
-        InitializeVAccountDB task = new InitializeVAccountDB(connector);
+        InitializeVAccountDB task = new InitializeVAccountDB(appSrcDir, connector);
         taskQueue.add(task);
         taskQueue.onTaskComplete((message, state) -> {
             if (message instanceof Response){
