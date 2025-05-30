@@ -1,10 +1,7 @@
 package com.infoworks.lab.layouts;
 
 import com.infoworks.lab.components.component.VImage;
-import com.infoworks.lab.components.ui.GeoTrackerView;
-import com.infoworks.lab.components.ui.ProfileView;
-import com.infoworks.lab.components.ui.TrendsCrudView;
-import com.infoworks.lab.components.ui.TrendsView;
+import com.infoworks.lab.components.ui.*;
 import com.infoworks.lab.config.ApplicationProperties;
 import com.infoworks.lab.config.UserSessionManagement;
 import com.infoworks.lab.domain.entities.User;
@@ -121,9 +118,10 @@ public class ApplicationLayout extends AppLayout {
 
     private Tabs getTabs() {
         Tabs tabs = new Tabs(
-                profile()
-                , trends()
-                , trendsCrud()
+                dashboard()
+                //, profile()
+                //, trends()
+                //, trendsCrud()
                 //, trackerView()
                 , logout());
         tabs.setOrientation(Tabs.Orientation.VERTICAL);
@@ -202,6 +200,13 @@ public class ApplicationLayout extends AppLayout {
         // this will create duplicate content.
         final Tab tab = createTab(VaadinIcon.MAP_MARKER, viewName, null);
         tab2Workspace.put(tab, new GeoTrackerView());
+        return tab;
+    }
+
+    private Tab dashboard() {
+        String viewName = RoutePath.menuName(RoutePath.DASHBOARD_VIEW);
+        final Tab tab = createTab(VaadinIcon.DASHBOARD, viewName, DashboardView.class);
+        //tab2Workspace.put(tab, new DashboardView());
         return tab;
     }
 

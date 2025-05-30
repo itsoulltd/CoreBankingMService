@@ -11,6 +11,7 @@ public class RoutePath {
     public static final String TRENDS_VIEW = "Trends_View";
     public static final String TRENDS_CRUD_VIEW = "Trends_Crud_View";
     public static final String GEO_TRACKER_VIEW = "Geo_Tracker";
+    public static final String DASHBOARD_VIEW = "Dashboard";
 
     public static String menuName(String routePath) {
         return routePath.replaceAll("_", " ");
