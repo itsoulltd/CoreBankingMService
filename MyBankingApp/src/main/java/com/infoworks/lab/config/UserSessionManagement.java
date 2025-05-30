@@ -31,7 +31,7 @@ public class UserSessionManagement {
         //
         UI.getCurrent().getSession().setAttribute(X_AUTH_TOKEN, token);
         EventQueue.register();
-        UI.getCurrent().navigate(RoutePath.PROFILE_VIEW);
+        UI.getCurrent().navigate(RoutePath.DASHBOARD_VIEW);
         return true;
     }
 
