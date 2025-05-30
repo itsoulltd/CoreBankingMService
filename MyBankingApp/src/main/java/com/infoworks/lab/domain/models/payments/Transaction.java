@@ -111,7 +111,7 @@ public class Transaction extends Event {
 
     public LocalDateTime getTransactionLocalDate() {
         if (transaction_date != null && !transaction_date.isEmpty()) {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd''T''HH:mm:ss");
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
             return LocalDateTime.parse(transaction_date, formatter);
         }
         return LocalDateTime.now();
