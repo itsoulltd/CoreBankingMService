@@ -4,7 +4,11 @@ import com.infoworks.lab.rest.models.events.Event;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * {transaction_date=2024-08-24
@@ -115,5 +119,19 @@ public class Transaction extends Event {
             return LocalDateTime.parse(transaction_date, formatter);
         }
         return LocalDateTime.now();
+    }
+
+    public static List<Transaction> convert(List<Map> response, Comparator comparator) {
+        List<Transaction> transactions = response.stream()
+                .map(trnMap -> {
+                    Transaction trn = new Transaction();
+                    trn.unmarshallingFromMap(trnMap, false);
+                    return trn;
+                })
+                .collect(Collectors.toList());
+        if (comparator != null) {
+            transactions.sort(comparator);
+        }
+        return transactions;
     }
 }

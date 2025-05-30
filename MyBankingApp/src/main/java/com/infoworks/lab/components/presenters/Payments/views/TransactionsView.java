@@ -243,7 +243,7 @@ public class TransactionsView extends Composite<Div> {
             //Sort by balance descending order:
             //sortBy = Comparator.comparing(Transaction::getBalance).reversed();
             //
-            List<Transaction> transactions = repository.convert(response, sortBy);
+            List<Transaction> transactions = Transaction.convert(response, sortBy);
             return transactions;
             //
         } catch (Exception e) {

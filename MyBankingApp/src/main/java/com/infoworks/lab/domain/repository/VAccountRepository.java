@@ -2,7 +2,6 @@ package com.infoworks.lab.domain.repository;
 
 import com.infoworks.lab.config.RequestURI;
 import com.infoworks.lab.config.RestTemplateConfig;
-import com.infoworks.lab.domain.models.payments.Transaction;
 import com.infoworks.lab.rest.models.Response;
 import com.infoworks.lab.rest.models.SearchQuery;
 import com.vaadin.flow.component.UI;
@@ -13,11 +12,9 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class VAccountRepository {
 
@@ -169,20 +166,6 @@ public class VAccountRepository {
         } catch (Exception e) {
             throw new RuntimeException(e.getLocalizedMessage());
         }
-    }
-
-    public List<Transaction> convert(List<Map> response, Comparator comparator) {
-        List<Transaction> transactions = response.stream()
-                .map(trnMap -> {
-                    Transaction trn = new Transaction();
-                    trn.unmarshallingFromMap(trnMap, false);
-                    return trn;
-                })
-                .collect(Collectors.toList());
-        if (comparator != null) {
-            transactions.sort(comparator);
-        }
-        return transactions;
     }
 
     /**
