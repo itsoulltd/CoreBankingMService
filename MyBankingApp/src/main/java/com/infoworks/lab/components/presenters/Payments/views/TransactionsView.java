@@ -234,7 +234,7 @@ public class TransactionsView extends Composite<Div> {
                     return;
                 }
                 //Sort by transaction_date & balance descending order:
-                Comparator sortBy = Comparator.comparing(Transaction::getTransactionLocalDate)
+                Comparator sortBy = Comparator.comparing(Transaction::getTransactionDateTime)
                         .thenComparing(Transaction::getBalance).reversed();
                 //Sort by balance descending order:
                 //sortBy = Comparator.comparing(Transaction::getBalance).reversed();

@@ -113,7 +113,7 @@ public class Transaction extends Event {
         return Objects.hash(super.hashCode(), transaction_ref);
     }
 
-    public LocalDateTime getTransactionLocalDate() {
+    public LocalDateTime getTransactionDateTime() {
         if (transaction_date != null && !transaction_date.isEmpty()) {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
             return LocalDateTime.parse(transaction_date, formatter);
