@@ -2,11 +2,11 @@ package com.infoworks.lab.components.presenters.Payments.views;
 
 import com.infoworks.lab.components.component.FormActionBar;
 import com.infoworks.lab.components.component.IndeterminateDialog;
-import com.infoworks.lab.domain.beans.queues.EventQueue;
+import com.infoworks.lab.components.presenters.Payments.tasks.TransactionHistoryTask;
 import com.infoworks.lab.components.presenters.Payments.view.models.Transaction;
 import com.infoworks.lab.components.presenters.Payments.view.models.TransactionType;
+import com.infoworks.lab.domain.beans.queues.EventQueue;
 import com.infoworks.lab.domain.repository.VAccountRepository;
-import com.infoworks.lab.rest.models.SearchQuery;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.DetachEvent;
@@ -29,11 +29,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class TransactionsView extends Composite<Div> {
@@ -52,6 +50,7 @@ public class TransactionsView extends Composite<Div> {
     private VAccountRepository repository;
     private boolean isModalView;
     private FormActionBar actionBar;
+    private TransactionHistoryTask transactionHistoryTask;
 
     public TransactionsView(String accountPrefix, String accountName, Dialog dialog) {
         this.accountPrefix = accountPrefix;
@@ -67,6 +66,14 @@ public class TransactionsView extends Composite<Div> {
 
     public TransactionsView() {
         this(null, null);
+    }
+
+    public TransactionHistoryTask getTransactionHistoryTask() {
+        return transactionHistoryTask;
+    }
+
+    public void setTransactionHistoryTask(TransactionHistoryTask transactionHistoryTask) {
+        this.transactionHistoryTask = transactionHistoryTask;
     }
 
     @Override
@@ -115,12 +122,8 @@ public class TransactionsView extends Composite<Div> {
                 EventQueue.dispatch(500
                         , TimeUnit.MILLISECONDS
                         , () -> ui.access(() -> {
-                            List<Transaction> transactions = triggerDataFetch(ui
-                                    , this.accountPrefix, this.accountName
-                                    , pageSize, type
-                                    , from, to);
-                            //Update UI:
-                            this.mainView.setItems(transactions);
+                            triggerDataFetch(ui, accountPrefix, accountName
+                                    , type, from, to, pageSize);
                         }));
             } else {
                 //Open delay & progress with:
@@ -130,12 +133,8 @@ public class TransactionsView extends Composite<Div> {
                     EventQueue.dispatch(1200, TimeUnit.MILLISECONDS
                             , () -> ui.access(() -> {
                                 //Pass values:
-                                List<Transaction> transactions = triggerDataFetch(ui
-                                        , this.accountPrefix, this.accountName
-                                        , pageSize, type
-                                        , from, to);
-                                //Update UI:
-                                this.mainView.setItems(transactions);
+                                triggerDataFetch(ui, accountPrefix, accountName
+                                        , type, from, to, pageSize);
                                 dialog.close();
                             }));
                 });
@@ -213,46 +212,39 @@ public class TransactionsView extends Composite<Div> {
         return layout;
     }
 
-    private List<Transaction> triggerDataFetch(UI ui, String prefix
+    private void triggerDataFetch(UI ui
+            , String prefix
             , String username
-            , int pageSize
             , TransactionType type
             , LocalDate from
-            , LocalDate to) {
-        //Prepare Search-Query:
-        SearchQuery query = new SearchQuery();
-        query.setSize(pageSize);
-        query.setPage(0);
-        //Adding Transaction-type:
-        if (type != TransactionType.Any)
-            query.add("type").isEqualTo(type.value());
-        //Assigning From or To datetime:
-        DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        String fromDate = from.format(dateFormat);
-        query.add("from").isGreaterThenOrEqual(fromDate);
+            , LocalDate to
+            , int pageSize) {
         //
-        String toDate = to.format(dateFormat);
-        query.add("to").isGreaterThenOrEqual(toDate);
-        //query.add("till").isGreaterThenOrEqual(<till-date>);
-        //Send search-request:
-        try {
-            List<Map> response = repository.searchTransactions(prefix, username, query);
-            //Sort by transaction_date & balance descending order:
-            Comparator sortBy = Comparator.comparing(Transaction::getTransactionLocalDate)
-                    .thenComparing(Transaction::getBalance).reversed();
-            //Sort by balance descending order:
-            //sortBy = Comparator.comparing(Transaction::getBalance).reversed();
-            //
-            List<Transaction> transactions = Transaction.convert(response, sortBy);
-            return transactions;
-            //
-        } catch (Exception e) {
-            LOG.error(e.getMessage(), e);
-            ui.access(() -> {
-                Notification notification = Notification.show(e.getLocalizedMessage());
-                notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+        TransactionHistoryTask task = (getTransactionHistoryTask() != null)
+                ? getTransactionHistoryTask()
+                : new TransactionHistoryTask(repository, prefix, username, type, from, to, pageSize);
+        //Update default task.consumer if null:
+        if (task.getConsumer() == null) {
+            task.setConsumer((response) -> {
+                if (response == null || response.size() == 0) {
+                    ui.access(() -> {
+                        Notification notification = Notification.show("No transactions found!");
+                        notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+                    });
+                    return;
+                }
+                //Sort by transaction_date & balance descending order:
+                Comparator sortBy = Comparator.comparing(Transaction::getTransactionLocalDate)
+                        .thenComparing(Transaction::getBalance).reversed();
+                //Sort by balance descending order:
+                //sortBy = Comparator.comparing(Transaction::getBalance).reversed();
+                //Update UI:
+                List<Transaction> transactions = Transaction.convert(response, sortBy);
+                this.mainView.setItems(transactions);
             });
         }
-        return new ArrayList<>();
+        //Finally execute:
+        task.execute(null);
     }
+
 }
