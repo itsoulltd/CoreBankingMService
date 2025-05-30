@@ -98,8 +98,8 @@ public class TransactionHistoryTask extends BaseRequest<Message, Response> {
             if (consumer != null) consumer.accept(response);
         } catch (Exception e) {
             LOG.error(e.getMessage(), e);
+            if (consumer != null) consumer.accept(new ArrayList<>());
         }
-        if (consumer != null) consumer.accept(new ArrayList<>());
         return new Response().setStatus(200);
     }
 }
