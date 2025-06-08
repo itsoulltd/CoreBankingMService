@@ -92,4 +92,7 @@
     iOS-Startup App: (https://github.com/itsoulltd/StartUp-IOS)
     Android-Startup App: (https://github.com/itsoulltd/AndroidAppStarter)
     JUnit-SpringBoot Best Practice: (https://github.com/itsoulltd/SpringMServiceJpaUnitTest)
+
+####DB Structure:
+![Alt text](ReadMeImages/MyBankDB.png)
     
