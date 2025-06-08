@@ -163,7 +163,7 @@ public class WithdrawForm extends FormLayout {
                                         , ApplicationProperties.CURRENCY
                                         , amount);
                                 if (response.getStatus() == 200) {
-                                    currentBalance = currentBalance.add(new BigDecimal(amount));
+                                    currentBalance = currentBalance.subtract(new BigDecimal(amount));
                                     accountBalanceLb.setText("Balance: " + currentBalance.toString());
                                 } else {
                                     Notification notification = Notification.show(response.getError());
