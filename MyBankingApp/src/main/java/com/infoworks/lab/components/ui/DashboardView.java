@@ -1,14 +1,17 @@
 package com.infoworks.lab.components.ui;
 
+import com.infoworks.lab.components.presenters.Payments.forms.DepositForm;
+import com.infoworks.lab.components.presenters.Payments.forms.TransferForm;
+import com.infoworks.lab.components.presenters.Payments.forms.WithdrawForm;
+import com.infoworks.lab.components.presenters.Payments.parser.VAccountResponseParser;
 import com.infoworks.lab.components.presenters.Payments.tasks.CreateAccountTask;
+import com.infoworks.lab.components.presenters.Payments.view.models.AccountPrefix;
+import com.infoworks.lab.components.presenters.Payments.view.models.AccountType;
 import com.infoworks.lab.components.presenters.Payments.views.TransactionsView;
 import com.infoworks.lab.config.ApplicationProperties;
 import com.infoworks.lab.config.RestTemplateConfig;
 import com.infoworks.lab.domain.beans.queues.EventQueue;
 import com.infoworks.lab.domain.entities.User;
-import com.infoworks.lab.components.presenters.Payments.view.models.AccountPrefix;
-import com.infoworks.lab.components.presenters.Payments.view.models.AccountType;
-import com.infoworks.lab.components.presenters.Payments.parser.VAccountResponseParser;
 import com.infoworks.lab.domain.repository.AuthRepository;
 import com.infoworks.lab.domain.repository.VAccountRepository;
 import com.infoworks.lab.layouts.ApplicationLayout;
@@ -16,20 +19,25 @@ import com.infoworks.lab.layouts.RoutePath;
 import com.infoworks.lab.rest.models.Response;
 import com.it.soul.lab.sql.query.models.Property;
 import com.vaadin.flow.component.AttachEvent;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.progressbar.ProgressBar;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import org.springframework.web.client.RestTemplate;
 
+import java.math.BigDecimal;
 import java.util.concurrent.TimeUnit;
 
 @PageTitle("Dashboard")
@@ -37,6 +45,8 @@ import java.util.concurrent.TimeUnit;
 public class DashboardView extends Composite<Div> {
 
     private final VAccountRepository repository;
+    private VerticalLayout balanceView;
+    private TransactionsView transView;
 
     public DashboardView() {
         repository = new VAccountRepository(RestTemplateConfig.getTemplate());
@@ -124,15 +134,86 @@ public class DashboardView extends Composite<Div> {
         if (getContent().getChildren().count() > 0){
             getContent().removeAll();
         }
+        //Current-Balance View:
+        balanceView = createBalanceView();
+        //Action View: (Deposit, Withdraw, Transfer)
+        Component actionBar = configActionBar(prefix.name(), user.getName());
         //TransactionView:
-        TransactionsView transView = new TransactionsView();
-        getContent().add(transView);
+        transView = new TransactionsView();
+        //Add all view to Dashboard-Content:
+        getContent().add(balanceView, actionBar, transView);
         //Fetch transactions:
         UI ui = UI.getCurrent();
-        EventQueue.dispatch(200, TimeUnit.MILLISECONDS
+        updateTransactionView(ui, prefix.name(), user.getName());
+        //Fetch Balance:
+        updateBalance(ui, balanceView, prefix.name(), user.getName());
+    }
+
+    private VerticalLayout createBalanceView() {
+        VerticalLayout layout = new VerticalLayout();
+        layout.add(new Span("Current Balance: (loading...)"));
+        return layout;
+    }
+
+    private void updateBalance(UI ui, VerticalLayout balanceView, String prefix, String username) {
+        EventQueue.dispatch(300, TimeUnit.MILLISECONDS
                 , () -> ui.access(() -> {
-                    //Load Transactions for CASH@Username
-                    transView.update(ui, prefix.name(), user.getName());
+                    //Fetch current balance:
+                    try {
+                        Response response = repository.accountBalance(prefix, username);
+                        BigDecimal currentBalance = VAccountResponseParser.getBalance(response);
+                        balanceView.removeAll();
+                        balanceView.add(new Span("Current Balance: " + currentBalance.toString()));
+                    } catch (RuntimeException e) {
+                        Notification notification = Notification.show(e.getLocalizedMessage());
+                        notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+                    }
                 }));
+    }
+
+    private void updateTransactionView(UI ui, String prefix, String username) {
+        //Load Transactions for CASH@Username
+        EventQueue.dispatch(200, TimeUnit.MILLISECONDS
+                , () -> ui.access(() -> transView.update(ui, prefix, username)));
+    }
+
+    private Component configActionBar(String prefix, String username) {
+        HorizontalLayout layout = new HorizontalLayout();
+        layout.setPadding(true);
+        layout.setSpacing(true);
+        layout.setJustifyContentMode(FlexComponent.JustifyContentMode.START);
+        layout.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
+        //Deposit Action:
+        layout.add(new Button("Deposit", (event) -> {
+            Dialog dialog = new Dialog();
+            dialog.addDetachListener((e) -> {
+                UI ui = e.getSource().getUI().orElse(null);
+                updateBalance(ui, this.balanceView, prefix, username);
+                updateTransactionView(ui, prefix, username);
+            });
+            dialog.add(new DepositForm(prefix, username, dialog));
+            dialog.open();
+        }));
+        //Withdraw Action:
+        layout.add(new Button("Withdraw", (event) -> {
+            Dialog dialog = new Dialog();
+            dialog.addDetachListener((e) -> {
+                UI ui = e.getSource().getUI().orElse(null);
+                updateBalance(ui, this.balanceView, prefix, username);
+                updateTransactionView(ui, prefix, username);
+            });
+            dialog.add(new WithdrawForm(prefix, username, dialog));
+            dialog.open();
+        }));
+        //Transfer Action:
+        /*layout.add(new Button("Transfer", (event) -> {
+            Dialog dialog = new Dialog();
+            dialog.addDetachListener((e) -> {
+                updateBalance(e.getSource().getUI().orElse(null), this.balanceView, prefix, username);
+            });
+            dialog.add(new TransferForm(prefix, username, "", "", dialog));
+            dialog.open();
+        }));*/
+        return layout;
     }
 }
