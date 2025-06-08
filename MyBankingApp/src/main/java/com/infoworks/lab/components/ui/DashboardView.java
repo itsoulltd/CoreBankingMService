@@ -1,5 +1,7 @@
 package com.infoworks.lab.components.ui;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.infoworks.lab.beans.tasks.rest.client.spring.methods.GetTask;
 import com.infoworks.lab.components.presenters.Payments.forms.DepositForm;
 import com.infoworks.lab.components.presenters.Payments.forms.TransferForm;
 import com.infoworks.lab.components.presenters.Payments.forms.WithdrawForm;
@@ -9,6 +11,7 @@ import com.infoworks.lab.components.presenters.Payments.view.models.AccountPrefi
 import com.infoworks.lab.components.presenters.Payments.view.models.AccountType;
 import com.infoworks.lab.components.presenters.Payments.views.TransactionsView;
 import com.infoworks.lab.config.ApplicationProperties;
+import com.infoworks.lab.config.RequestURI;
 import com.infoworks.lab.config.RestTemplateConfig;
 import com.infoworks.lab.domain.beans.queues.EventQueue;
 import com.infoworks.lab.domain.entities.User;
@@ -16,6 +19,7 @@ import com.infoworks.lab.domain.repository.AuthRepository;
 import com.infoworks.lab.domain.repository.VAccountRepository;
 import com.infoworks.lab.layouts.ApplicationLayout;
 import com.infoworks.lab.layouts.RoutePath;
+import com.infoworks.lab.rest.models.Message;
 import com.infoworks.lab.rest.models.Response;
 import com.it.soul.lab.sql.query.models.Property;
 import com.vaadin.flow.component.AttachEvent;
@@ -23,6 +27,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
@@ -37,8 +42,15 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @PageTitle("Dashboard")
 @Route(value = RoutePath.DASHBOARD_VIEW, layout = ApplicationLayout.class)
@@ -47,6 +59,7 @@ public class DashboardView extends Composite<Div> {
     private final VAccountRepository repository;
     private VerticalLayout balanceView;
     private TransactionsView transView;
+    private String selectedReceiverAccountTitle;
 
     public DashboardView() {
         repository = new VAccountRepository(RestTemplateConfig.getTemplate());
@@ -138,10 +151,11 @@ public class DashboardView extends Composite<Div> {
         balanceView = createBalanceView();
         //Action View: (Deposit, Withdraw, Transfer)
         Component actionBar = configActionBar(prefix.name(), user.getName());
+        Component transferBar = configTransferView(UI.getCurrent(), prefix.name(), user.getName());
         //TransactionView:
         transView = new TransactionsView();
         //Add all view to Dashboard-Content:
-        getContent().add(balanceView, actionBar, transView);
+        getContent().add(balanceView, actionBar, transferBar, transView);
         //Fetch transactions:
         UI ui = UI.getCurrent();
         updateTransactionView(ui, prefix.name(), user.getName());
@@ -205,15 +219,72 @@ public class DashboardView extends Composite<Div> {
             dialog.add(new WithdrawForm(prefix, username, dialog));
             dialog.open();
         }));
+        return layout;
+    }
+
+    private Component configTransferView(UI ui, String fromPrefix, String fromAccName) {
+        HorizontalLayout layout = new HorizontalLayout();
+        layout.setPadding(true);
+        layout.setSpacing(true);
+        layout.setJustifyContentMode(FlexComponent.JustifyContentMode.START);
+        layout.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
+        //Add SearchView
+        ComboBox<String> accountBox = new ComboBox<>();
+        accountBox.setPlaceholder("Select or search....");
+        accountBox.getStyle().set("--vaadin-combo-box-overlay-width", "350px");
+        accountBox.setAllowCustomValue(true);
+        accountBox.setItems(new ArrayList<>()); //Initially Empty:
+        //Value-Change listener:
+        accountBox.addValueChangeListener((e) -> {
+            selectedReceiverAccountTitle = e.getValue();
+        });
+        //Custom-Value change listener for search:
+        accountBox.addCustomValueSetListener((e) -> {
+            //TODO:
+        });
+        layout.add(accountBox);
+        //Dispatch fetch:
+        fetchAccountTitles(ui, accountBox);
         //Transfer Action:
-        /*layout.add(new Button("Transfer", (event) -> {
+        layout.add(new Button("Transfer", (event) -> {
             Dialog dialog = new Dialog();
             dialog.addDetachListener((e) -> {
-                updateBalance(e.getSource().getUI().orElse(null), this.balanceView, prefix, username);
+                UI uia = e.getSource().getUI().orElse(null);
+                updateBalance(uia, this.balanceView, fromPrefix, fromAccName);
+                updateTransactionView(uia, fromPrefix, fromAccName);
             });
-            dialog.add(new TransferForm(prefix, username, "", "", dialog));
+            String toPrefix = "", toAccName = "";
+            if (selectedReceiverAccountTitle != null
+            && selectedReceiverAccountTitle.contains("@")) {
+                String[] parts = selectedReceiverAccountTitle.split("@");
+                toPrefix = parts[0];
+                toAccName = parts[1];
+            }
+            dialog.add(new TransferForm(fromPrefix, fromAccName, toPrefix, toAccName, dialog));
             dialog.open();
-        }));*/
+        }));
         return layout;
+    }
+
+    private void fetchAccountTitles(UI ui, ComboBox<String> accountBox) {
+        EventQueue.dispatch(300, TimeUnit.MILLISECONDS
+                , () -> ui.access(() -> {
+                    GetTask task = new GetTask(RequestURI.USER_API
+                            , ""
+                            , 20, 1);
+                    task.setTemplate(RestTemplateConfig.getTemplate());
+                    task.setToken(AuthRepository.parseToken(ui));
+                    Response response = task.execute(null);
+                    try {
+                        List<Map<String, Object>> rows = Message.unmarshal(
+                                new TypeReference<List<Map<String, Object>>>() {}, response.getPayload());
+                        List<String> accTitles = rows.stream().flatMap(row ->
+                                Stream.of(Optional.ofNullable(row.get("account_ref")).orElse("").toString())
+                        ).collect(Collectors.toList());
+                        accountBox.setItems(accTitles);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }));
     }
 }
