@@ -269,8 +269,8 @@ public class DashboardView extends Composite<Div> {
     private void fetchAccountTitles(UI ui, ComboBox<String> accountBox) {
         EventQueue.dispatch(300, TimeUnit.MILLISECONDS
                 , () -> ui.access(() -> {
-                    GetTask task = new GetTask(RequestURI.USER_API
-                            , ""
+                    GetTask task = new GetTask(RequestURI.USER_BASE + RequestURI.USER_API
+                            , "?limit={limit}&page={page}"
                             , 20, 1);
                     task.setTemplate(RestTemplateConfig.getTemplate());
                     task.setToken(AuthRepository.parseToken(ui));
