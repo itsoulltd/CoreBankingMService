@@ -44,10 +44,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -231,6 +228,7 @@ public class DashboardView extends Composite<Div> {
         //Add SearchView
         ComboBox<String> accountBox = new ComboBox<>();
         accountBox.setPlaceholder("Select or search....");
+        accountBox.setWidth("250px");
         accountBox.getStyle().set("--vaadin-combo-box-overlay-width", "350px");
         accountBox.setAllowCustomValue(true);
         accountBox.setItems(new ArrayList<>()); //Initially Empty:
@@ -244,7 +242,8 @@ public class DashboardView extends Composite<Div> {
         });
         layout.add(accountBox);
         //Dispatch fetch:
-        fetchAccountTitles(ui, accountBox);
+        fetchAccountTitles(ui, accountBox
+                , String.format("%s@%s", fromPrefix, fromAccName), "CASH@Master", "REVENUE@Master");
         //Transfer Action:
         layout.add(new Button("Transfer", (event) -> {
             Dialog dialog = new Dialog();
@@ -266,7 +265,7 @@ public class DashboardView extends Composite<Div> {
         return layout;
     }
 
-    private void fetchAccountTitles(UI ui, ComboBox<String> accountBox) {
+    private void fetchAccountTitles(UI ui, ComboBox<String> accountBox, String...excludes) {
         EventQueue.dispatch(300, TimeUnit.MILLISECONDS
                 , () -> ui.access(() -> {
                     GetTask task = new GetTask(RequestURI.USER_BASE + RequestURI.USER_API
@@ -276,11 +275,13 @@ public class DashboardView extends Composite<Div> {
                     task.setToken(AuthRepository.parseToken(ui));
                     Response response = task.execute(null);
                     try {
+                        List<String> exclusionList = Arrays.asList(excludes);
                         List<Map<String, Object>> rows = Message.unmarshal(
                                 new TypeReference<List<Map<String, Object>>>() {}, response.getPayload());
                         List<String> accTitles = rows.stream().flatMap(row ->
                                 Stream.of(Optional.ofNullable(row.get("account_ref")).orElse("").toString())
-                        ).collect(Collectors.toList());
+                        ).filter(val -> !exclusionList.contains(val))
+                                .collect(Collectors.toList());
                         accountBox.setItems(accTitles);
                     } catch (IOException e) {
                         e.printStackTrace();
