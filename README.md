@@ -5,8 +5,8 @@
     
 ####Setting up:
 
-    Access swagger @ http://localhost/api/swagger-ui.html
-    Access h2-console @ http://localhost/api/h2-console
+    Access swagger @ http://localhost:8080/api/swagger-ui.html
+    Access h2-console @ http://localhost:8080/api/h2-console
     JDBC URL: jdbc:h2:~/testDB
     username: sa
     password: sa
