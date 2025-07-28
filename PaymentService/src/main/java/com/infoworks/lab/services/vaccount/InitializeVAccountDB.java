@@ -4,43 +4,34 @@ import com.infoworks.lab.rest.models.Message;
 import com.infoworks.lab.rest.models.Response;
 import com.it.soul.lab.connect.io.ScriptRunner;
 import com.itsoul.lab.ledgerbook.connector.SourceConnector;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpStatus;
 
-import java.io.*;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.SQLException;
 
 public class InitializeVAccountDB extends LedgerTask {
 
     private SourceConnector connector;
-    private final String sourceDirectory;
     protected SourceConnector getConnector(){return connector;}
 
-    public InitializeVAccountDB(String sourceDirectory, SourceConnector connector) {
+    public InitializeVAccountDB(SourceConnector connector) {
         super(null);
         this.connector = connector;
-        this.sourceDirectory = (sourceDirectory == null || sourceDirectory.isEmpty())
-                ? "src" : sourceDirectory;
-    }
-
-    public InitializeVAccountDB(SourceConnector connector) {
-        this(null, connector);
     }
 
     @Override
     public Message execute(Message message) throws RuntimeException {Response response = new Response();
         SourceConnector connector = getConnector();
         ScriptRunner runner = new ScriptRunner();
-        String[] paths = sourceDirectory.equalsIgnoreCase("src")
-                ? new String[]{"main","resources"}
-                : new String[]{"src","main","resources"};
-        Path path = Paths.get(sourceDirectory, paths);
-        String absolutePath = path.toFile().getAbsolutePath();
-        File file = new File(absolutePath + "/" + connector.schema());
+        //Fixing using Spring ClassPathResource.java
+        //File file = new ClassPathResource(connector.schema()).getFile();
         //
-        try(InputStream stream = new FileInputStream(file);
+        try(InputStream stream = new FileInputStream(new ClassPathResource(connector.schema()).getFile());
             Connection connection = connector.getConnection()) {
             //
             String[] cmds = runner.commands(stream);

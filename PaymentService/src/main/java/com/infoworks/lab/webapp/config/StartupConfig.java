@@ -47,7 +47,7 @@ public class StartupConfig implements CommandLineRunner {
 
     private void initializeVAccount() throws SQLException {
         TaskQueue taskQueue = TaskQueue.createSync(true);
-        InitializeVAccountDB task = new InitializeVAccountDB(appSrcDir, connector);
+        InitializeVAccountDB task = new InitializeVAccountDB(connector);
         taskQueue.onTaskComplete((message, state) -> {
             if (message instanceof Response){
                 Response response = (Response) message;
