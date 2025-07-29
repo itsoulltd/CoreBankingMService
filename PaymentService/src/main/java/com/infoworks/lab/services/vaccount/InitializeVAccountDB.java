@@ -7,7 +7,6 @@ import com.itsoul.lab.ledgerbook.connector.SourceConnector;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpStatus;
 
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,7 +30,7 @@ public class InitializeVAccountDB extends LedgerTask {
         //Fixing using Spring ClassPathResource.java
         //File file = new ClassPathResource(connector.schema()).getFile();
         //
-        try(InputStream stream = new FileInputStream(new ClassPathResource(connector.schema()).getFile());
+        try(InputStream stream = new ClassPathResource(connector.schema()).getInputStream();
             Connection connection = connector.getConnection()) {
             //
             String[] cmds = runner.commands(stream);
