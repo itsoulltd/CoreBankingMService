@@ -1,16 +1,20 @@
 package com.infoworks.domain.repositories;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.infoworks.config.ApplicationProperties;
 import com.infoworks.config.RequestURI;
 import com.infoworks.config.UserRole;
 import com.infoworks.domain.entities.User;
 import com.infoworks.domain.models.Login;
+import com.infoworks.domain.models.ResetPassword;
+import com.infoworks.objects.MessageParser;
 import com.infoworks.objects.Response;
 import com.infoworks.orm.Property;
 import com.infoworks.utils.jwt.TokenProvider;
 import com.infoworks.utils.jwt.impl.JWebToken;
 import com.infoworks.utils.jwt.models.JWTHeader;
 import com.infoworks.utils.jwt.models.JWTPayload;
+import com.infoworks.utils.rest.client.GetTask;
 import com.infoworks.utils.rest.client.PostTask;
 import com.vaadin.flow.component.UI;
 import org.springframework.stereotype.Component;
@@ -18,6 +22,7 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -171,7 +176,6 @@ public class AuthRepository {
 
     public String login(String username , String password) throws IOException {
         /* /auth/v1/login */
-        //Response response = post(new Login(username, password), "login");
         PostTask postTask = new PostTask(RequestURI.AUTH_BASE + RequestURI.AUTH_API, "login");
         postTask.setBody(new Login(username, password), null);
         Response response = postTask.execute(null);
@@ -180,38 +184,76 @@ public class AuthRepository {
     }
 
     public boolean isAccountExist(String username) throws IOException {
-        return false;
+        /* /auth/v1/isAccountExist?username={username} */
+        GetTask task = new GetTask(RequestURI.AUTH_BASE + RequestURI.AUTH_API
+                , "isAccountExist"
+                , new Property("username", username));
+        Response response = task.execute(null);
+        return response.getStatus() == 200;
     }
 
     public boolean isCurrentTokenIsValid() throws IOException {
-        return false;
+        Response response = isValidToken(parseToken(UI.getCurrent()));
+        return response.getStatus() == 200;
     }
 
     public Response isValidToken(String userToken) throws IOException {
-        return new Response().setStatus(401);
+        /* /auth/v1/isValidToken */
+        GetTask task = new GetTask(RequestURI.AUTH_BASE + RequestURI.AUTH_API
+                , "isValidToken");
+        task.setToken(userToken);
+        Response response = task.execute(null);
+        return response;
     }
 
     public String refreshCurrentToken() throws IOException {
-        return "";
+        return refreshToken(parseToken(UI.getCurrent()));
     }
 
     public String refreshToken(String userToken) throws IOException {
-        return "";
+        /* /auth/v1/refreshToken */
+        GetTask task = new GetTask(RequestURI.AUTH_BASE + RequestURI.AUTH_API
+                , "refreshToken");
+        task.setToken(userToken);
+        Response response = task.execute(null);
+        Map<String, String> info = MessageParser.unmarshal(new TypeReference<Map<String, String>>() {}, response.getMessage());
+        String refresh = info.get(X_AUTH_TOKEN);
+        return refresh;
     }
 
     public Response forget(String username) throws IOException {
-        return new Response().setStatus(401);
+        /* /auth/v1/forget?username={username} */
+        GetTask task = new GetTask(RequestURI.AUTH_BASE + RequestURI.AUTH_API
+                , "forget"
+                , new Property("username", username));
+        Response response = task.execute(null);
+        return response;
     }
 
     public String resetPassword(String forgetToken, String password) throws IOException {
-        return "";
+        /* /auth/v1/forget/reset?password={password} */
+        PostTask task = new PostTask(RequestURI.AUTH_BASE + RequestURI.AUTH_API
+                , "forget/reset"
+                , new Property("password", password));
+        task.setToken(forgetToken);
+        Response response = task.execute(null);
+        Map<String, String> info = MessageParser.unmarshal(new TypeReference<>() {}, response.getMessage());
+        String resetToken = info.get(X_AUTH_TOKEN);
+        return resetToken;
     }
 
     public String changePassword(String oldPass, String newPass) throws IOException {
-        return "";
+        return changePassword(parseToken(UI.getCurrent()), oldPass, newPass);
     }
 
     public String changePassword(String userToken, String oldPass, String newPass) throws IOException {
-        return "";
+        /* /auth/v1/reset */
+        PostTask task = new PostTask(RequestURI.AUTH_BASE + RequestURI.AUTH_API
+                , "reset");
+        task.setBody(new ResetPassword(userToken, oldPass, newPass), userToken);
+        Response response = task.execute(null);
+        Map<String, String> info = MessageParser.unmarshal(new TypeReference<>() {}, response.getMessage());
+        String resetToken = info.get(X_AUTH_TOKEN);
+        return resetToken;
     }
 }
