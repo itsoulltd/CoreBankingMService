@@ -7,6 +7,7 @@ import com.infoworks.components.presenters.Payments.view.models.Transaction;
 import com.infoworks.components.presenters.Payments.view.models.TransactionType;
 import com.infoworks.config.AppQueue;
 import com.infoworks.domain.repositories.VAccountRepository;
+import com.infoworks.domain.tasks.DisplayAsyncNotification;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.DetachEvent;
@@ -204,11 +205,20 @@ public class TransactionsView extends Composite<Div> {
             UI ui = e.getSource().getUI().orElse(null);
             update(ui, this.accountPrefix, this.accountName);
         });
+        //Download Excel Report:
+        Button downloadExcel = new Button("Download Excel", VaadinIcon.RECORDS.create());
+        downloadExcel.addThemeVariants(ButtonVariant.LUMO_CONTRAST);
+        downloadExcel.addClickListener(e -> {
+            //Prepare excel for download:
+            //TODO:
+            UI ui = e.getSource().getUI().orElse(null);
+            AppQueue.dispatchTask(new DisplayAsyncNotification(ui, "Under construction!"));
+        });
         //
         HorizontalLayout layout = new HorizontalLayout();
         layout.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.BASELINE);
         layout.setJustifyContentMode(FlexComponent.JustifyContentMode.START);
-        layout.add(pageSizeBox, transactionTypeBox, startDatePicker, endDatePicker, doFetch);
+        layout.add(pageSizeBox, transactionTypeBox, startDatePicker, endDatePicker, doFetch, downloadExcel);
         return layout;
     }
 
