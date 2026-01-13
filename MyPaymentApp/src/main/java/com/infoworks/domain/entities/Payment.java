@@ -1,10 +1,9 @@
 package com.infoworks.domain.entities;
 
-import com.infoworks.lab.rest.validation.CurrencyCode.IsValidCurrencyCode;
-import com.infoworks.lab.rest.validation.MoneyFormat.Money;
-
-import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
+import com.infoworks.domain.validation.constraint.CurrencyCode.IsValidCurrencyCode;
+import com.infoworks.domain.validation.constraint.MoneyFormat.Money;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 
 public class Payment extends Persistable<Long, Long> {

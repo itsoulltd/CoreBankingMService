@@ -1,0 +1,187 @@
+package com.infoworks.components.presenters.Payments.forms;
+
+import com.infoworks.components.component.FormActionBar;
+import com.infoworks.components.component.IndeterminateDialog;
+import com.infoworks.components.presenters.Payments.parser.VAccountResponseParser;
+import com.infoworks.components.presenters.Payments.view.models.TransactionAmount;
+import com.infoworks.config.ApplicationProperties;
+import com.infoworks.config.ValidationConfig;
+import com.infoworks.config.AppQueue;
+import com.infoworks.domain.repositories.AuthRepository;
+import com.infoworks.domain.repositories.VAccountRepository;
+import com.infoworks.objects.Response;
+import com.vaadin.flow.component.AttachEvent;
+import com.vaadin.flow.component.ClickEvent;
+import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
+import com.vaadin.flow.component.textfield.BigDecimalField;
+
+import jakarta.validation.Validator;
+import java.math.BigDecimal;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+
+public class DepositForm extends FormLayout {
+
+    private final String accountPrefix;
+    private final String accountName;
+    private final String accountTitle;
+    private Label accountTitleLb = new Label("Account: ");
+    private Label accountBalanceLb = new Label("Balance: ");
+    private BigDecimal currentBalance = new BigDecimal("0.00");
+    private BigDecimalField deposit = new BigDecimalField("Deposit:");
+    private FormActionBar actionBar;
+    private VAccountRepository repository;
+    private Dialog dialog;
+
+    public DepositForm(String accountPrefix, String accountName, Dialog dialog) {
+        this.accountPrefix = accountPrefix;
+        this.accountName = accountName;
+        this.accountTitle = String.format("%s@%s", this.accountPrefix, this.accountName);
+        this.actionBar = new FormActionBar(dialog);
+        this.repository = new VAccountRepository(AuthRepository.parseToken(UI.getCurrent()));
+        this.dialog = dialog;
+    }
+
+    public DepositForm(String accountPrefix, String accountName) {
+        this(accountPrefix, accountName, null);
+    }
+
+    public String getAccountTitle() {
+        return accountTitle;
+    }
+
+    public String getAccountPrefix() {
+        return accountPrefix;
+    }
+
+    public String getAccountName() {
+        return accountName;
+    }
+
+    public boolean isModalWindow() {
+        return this.dialog != null;
+    }
+
+    @Override
+    protected void onAttach(AttachEvent attachEvent) {
+        super.onAttach(attachEvent);
+        //
+        this.accountTitleLb.setText(String.format("Account: %s", getAccountTitle()));
+        this.deposit.setRequiredIndicatorVisible(true);
+        this.deposit.setValue(new BigDecimal("0.00"));
+        //
+        this.actionBar.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.STRETCH);
+        this.actionBar.setJustifyContentMode(FlexComponent.JustifyContentMode.END);
+        this.actionBar.setSaveButtonDisableOnClick(true);
+        this.actionBar.addOnSaveAction(onSaveAction());
+        //
+        add(accountTitleLb, accountBalanceLb
+                , deposit
+                , actionBar);
+        //UI config:
+        setResponsiveSteps(
+                // Use one column by default
+                new ResponsiveStep("0", 1),
+                // Use two columns, if layout's width exceeds 500px
+                new ResponsiveStep("300px", 2)
+        );
+        // Stretch the username & actionBar field over 2 columns
+        setColspan(deposit, 2);
+        setColspan(actionBar, 2);
+        //Fetch User Account-Info: Update accountBalance
+        fetchBalance(UI.getCurrent());
+    }
+
+    private void fetchBalance(UI ui) {
+        Dialog dialog = new IndeterminateDialog("Fetching balance...");
+        dialog.addAttachListener(event -> {
+            AppQueue.dispatch(500, TimeUnit.MILLISECONDS
+                    , () -> ui.access(() -> {
+                        //Fetch and update:
+                        try {
+                            Response response = repository.accountBalance(getAccountPrefix(), getAccountName());
+                            currentBalance = VAccountResponseParser.getBalance(response);
+                            accountBalanceLb.setText("Balance: " + currentBalance.toString());
+                        } catch (RuntimeException e) {
+                            Notification notification = Notification.show(e.getLocalizedMessage());
+                            notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+                        }
+                        dialog.close();
+                    }));
+        });
+        dialog.open();
+    }
+
+    private ComponentEventListener<ClickEvent<Button>> onSaveAction() {
+        return (event) -> {
+            //On Save Action:
+            UI ui = event.getSource().getUI().orElse(null);
+            //
+            BigDecimal depositAmount = Optional.ofNullable(this.deposit.getValue())
+                    .orElse(new BigDecimal("0.00"));
+            TransactionAmount transactionAmount = new TransactionAmount(depositAmount.toString());
+            //
+            Validator validator = ValidationConfig.getValidator();
+            String messages = ValidationConfig.validateWithMessage(validator, transactionAmount);
+            if (messages != null) {
+                Notification notification = Notification.show(messages);
+                notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+                this.actionBar.setSaveButtonEnable(true);
+            } else {
+                if (transactionAmount.getMoney().equals("0.00")) {
+                    Notification notification = Notification.show("Deposit not possible, value is 0.00!");
+                    notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+                    this.actionBar.setSaveButtonEnable(true);
+                } else {
+                    saveDeposit(ui, transactionAmount);
+                }
+            }
+        };
+    }
+
+    private void saveDeposit(UI ui, TransactionAmount transactionAmount) {
+        Dialog dialog = new IndeterminateDialog("Update balance...");
+        dialog.addAttachListener(event -> {
+            AppQueue.dispatch(500, TimeUnit.MILLISECONDS
+                    , () -> ui.access(() -> {
+                        //Save Deposit:
+                        try {
+                            Response response = repository.accountExist(getAccountPrefix(), getAccountName());
+                            //
+                            if (VAccountResponseParser.isExist(response)) {
+                                String amount = transactionAmount.getMoney();
+                                response = repository.makeDeposit(
+                                        getAccountName()
+                                        , ApplicationProperties.CURRENCY
+                                        , amount);
+                                if (response.getStatus() == 200) {
+                                    currentBalance = currentBalance.add(new BigDecimal(amount));
+                                    accountBalanceLb.setText("Balance: " + currentBalance.toString());
+                                } else {
+                                    Notification notification = Notification.show(response.getError());
+                                    notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+                                }
+                            } else {
+                                Notification notification = Notification.show("Deposit can not be possible, account is unavailable!");
+                                notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+                            }
+                        } catch (Exception e) {
+                            Notification notification = Notification.show(e.getMessage());
+                            notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+                        }
+                        actionBar.setSaveButtonEnable(true);
+                        dialog.close();
+                    }));
+        });
+        dialog.open();
+    }
+
+}

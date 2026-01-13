@@ -66,6 +66,36 @@ public class ApplicationProperties {
                     : properties.read("app.display.mode")
     ).orElse("DEV");
 
+    public static String CURRENCY = Optional.ofNullable(
+            System.getProperty("app.default.currency") != null
+                    ? System.getProperty("app.default.currency")
+                    : properties.read("app.default.currency")
+    ).orElse("BDT");
+
+    public static String APP_ACCOUNT_CASH_PREFIX = Optional.ofNullable(
+            System.getProperty("app.account.cash.prefix") != null
+                    ? System.getProperty("app.account.cash.prefix")
+                    : properties.read("app.account.cash.prefix")
+    ).orElse("CASH");
+
+    public static String APP_ACCOUNT_CASH_NAME = Optional.ofNullable(
+            System.getProperty("app.account.cash.name") != null
+                    ? System.getProperty("app.account.cash.name")
+                    : properties.read("app.account.cash.name")
+    ).orElse("Master");
+
+    public static String APP_ACCOUNT_REVENUE_PREFIX = Optional.ofNullable(
+            System.getProperty("app.account.revenue.prefix") != null
+                    ? System.getProperty("app.account.revenue.prefix")
+                    : properties.read("app.account.revenue.prefix")
+    ).orElse("REVENUE");
+
+    public static String APP_ACCOUNT_REVENUE_NAME = Optional.ofNullable(
+            System.getProperty("app.account.revenue.name") != null
+                    ? System.getProperty("app.account.revenue.name")
+                    : properties.read("app.account.revenue.name")
+    ).orElse("Master");
+
     /*public static String ABC_XY = Optional.ofNullable(
             System.getProperty("") != null ? System.getProperty("") : properties.read("")
     ).orElse("");*/
