@@ -185,7 +185,7 @@ public class DashboardView extends Composite<Div> {
     private void updateTransactionView(UI ui, String prefix, String username) {
         //Load Transactions for CASH@Username
         AppQueue.dispatch(200, TimeUnit.MILLISECONDS
-                , () -> ui.access(() -> transView.update(ui, prefix, username)));
+                , () -> ui.access(() -> transView.update(ui, prefix, username, TransactionsView.ACTION_SEARCH)));
     }
 
     private Component configActionBar(String prefix, String username) {

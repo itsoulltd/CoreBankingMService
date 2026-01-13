@@ -6,12 +6,10 @@ import com.infoworks.components.presenters.Payments.tasks.TransactionHistoryTask
 import com.infoworks.components.presenters.Payments.view.models.Transaction;
 import com.infoworks.components.presenters.Payments.view.models.TransactionType;
 import com.infoworks.config.AppQueue;
+import com.infoworks.config.ExcelWritingService;
 import com.infoworks.domain.repositories.VAccountRepository;
 import com.infoworks.domain.tasks.DisplayAsyncNotification;
-import com.vaadin.flow.component.AttachEvent;
-import com.vaadin.flow.component.Composite;
-import com.vaadin.flow.component.DetachEvent;
-import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -19,6 +17,7 @@ import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
@@ -26,16 +25,25 @@ import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.server.StreamRegistration;
+import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.server.VaadinSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class TransactionsView extends Composite<Div> {
+
+    public static final String ACTION_SEARCH = "SEARCH";
+    public static final String ACTION_DOWNLOAD_EXCEL = "EXCEL_DOWNLOAD";
+
     private static Logger LOG = LoggerFactory.getLogger("TransactionsView");
     //Components:
     private HorizontalLayout navBar;
@@ -105,10 +113,10 @@ public class TransactionsView extends Composite<Div> {
         }
         getContent().add(parent);
         //Send default search:
-        update(UI.getCurrent(), this.accountPrefix, this.accountName);
+        update(UI.getCurrent(), this.accountPrefix, this.accountName, ACTION_SEARCH);
     }
 
-    public void update(UI ui, String prefix, String accountName) {
+    public void update(UI ui, String prefix, String accountName, String action) {
         this.accountPrefix = prefix;
         this.accountName = accountName;
         //Send default search:
@@ -124,7 +132,7 @@ public class TransactionsView extends Composite<Div> {
                         , TimeUnit.MILLISECONDS
                         , () -> ui.access(() -> {
                             triggerDataFetch(ui, accountPrefix, accountName
-                                    , type, from, to, pageSize);
+                                    , type, from, to, pageSize, action);
                         }));
             } else {
                 //Open delay & progress with:
@@ -135,7 +143,7 @@ public class TransactionsView extends Composite<Div> {
                             , () -> ui.access(() -> {
                                 //Pass values:
                                 triggerDataFetch(ui, accountPrefix, accountName
-                                        , type, from, to, pageSize);
+                                        , type, from, to, pageSize, action);
                                 dialog.close();
                             }));
                 });
@@ -203,16 +211,16 @@ public class TransactionsView extends Composite<Div> {
         doFetch.addClickListener(e -> {
             //Send default search:
             UI ui = e.getSource().getUI().orElse(null);
-            update(ui, this.accountPrefix, this.accountName);
+            update(ui, this.accountPrefix, this.accountName, ACTION_SEARCH);
         });
         //Download Excel Report:
         Button downloadExcel = new Button("Download Excel", VaadinIcon.RECORDS.create());
         downloadExcel.addThemeVariants(ButtonVariant.LUMO_CONTRAST);
         downloadExcel.addClickListener(e -> {
             //Prepare excel for download:
-            //TODO:
             UI ui = e.getSource().getUI().orElse(null);
-            AppQueue.dispatchTask(new DisplayAsyncNotification(ui, "Under construction!"));
+            //AppQueue.dispatchTask(new DisplayAsyncNotification(ui, "Under construction!"));
+            update(ui, this.accountPrefix, this.accountName, ACTION_DOWNLOAD_EXCEL);
         });
         //
         HorizontalLayout layout = new HorizontalLayout();
@@ -228,7 +236,7 @@ public class TransactionsView extends Composite<Div> {
             , TransactionType type
             , LocalDate from
             , LocalDate to
-            , int pageSize) {
+            , int pageSize, String action) {
         //
         TransactionHistoryTask task = (getTransactionHistoryTask() != null)
                 ? getTransactionHistoryTask()
@@ -250,11 +258,49 @@ public class TransactionsView extends Composite<Div> {
                 //sortBy = Comparator.comparing(Transaction::getBalance).reversed();
                 //Update UI:
                 List<Transaction> transactions = Transaction.convert(response, sortBy);
-                this.mainView.setItems(transactions);
+                if (action.equalsIgnoreCase(ACTION_SEARCH)) {
+                    updateGridView(ui, transactions);
+                } else {
+                    downloadExcel(ui, transactions);
+                }
             });
         }
         //Finally execute:
         task.execute(null);
+    }
+
+    private void updateGridView(UI ui, List<Transaction> transactions) {
+        this.mainView.setItems(transactions);
+    }
+
+    private void downloadExcel(UI ui, List<Transaction> transactions) {
+        try {
+            ExcelWritingService.AsyncWriter writer = new ExcelWritingService.AsyncWriter(true, new ByteArrayOutputStream());
+            // Prepare Header-Column and rows:
+            Map<Integer, List<String>> data = new HashMap<>();
+            data.put(0, Arrays.asList("Prefix","AccountName","Currency","Amount","Balance","Type","Date"));
+            //...
+            writer.write("data", data, true);
+            InputStream ios = new ByteArrayInputStream(((ByteArrayOutputStream) writer.getOutfile()).toByteArray());
+
+            // Now Prepare download:
+            // New Api Vaadin (24.9+):
+            StreamResource resource = new StreamResource("example.xlsx", () -> ios);
+            resource.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            StreamRegistration registry = VaadinSession.getCurrent().getResourceRegistry().registerResource(resource);
+
+            // Download steps:
+            Anchor downloadLink = new Anchor(registry.getResourceUri().toString(), "");
+            downloadLink.getElement().setAttribute("download", true);
+
+            // Trigger download:
+            downloadLink.add(new Text(""));
+            this.navBar.add(downloadLink);
+            downloadLink.getElement().callJsFunction("click");
+            this.navBar.remove(downloadLink);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }
