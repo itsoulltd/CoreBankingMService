@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <!-- Project from https://start.vaadin.com/41bd7985-6985-479f-b99f-ab2928b4c375 -->
     <groupId>com.infoworks.lab</groupId>
-    <artifactId>my-payment-app</artifactId>
+    <artifactId>my-payment-app-v24</artifactId>
     <version>1.0-SNAPSHOT</version>
     <name>MyPaymentApp</name>
     <packaging>jar</packaging>
