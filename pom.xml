@@ -12,6 +12,7 @@
     <modules>
         <module>PaymentService</module>
         <module>MyBankingApp</module>
+        <module>MyPaymentApp</module>
     </modules>
 
     <properties>
