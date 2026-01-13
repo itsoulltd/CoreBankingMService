@@ -26,6 +26,11 @@ public class RequestURI {
     public static String USER_API = Optional.ofNullable(System.getenv("app.user.api")).orElse("/api/user/v1");
     public static String USER_REGISTRATION_API = Optional.ofNullable(System.getenv("app.user.registration.api")).orElse("/api/user/v1/registration");
 
+    public static String PAYMENT_HOST = Optional.ofNullable(System.getenv("app.payment.host")).orElse("localhost");
+    public static String PAYMENT_PORT = Optional.ofNullable(System.getenv("app.payment.port")).orElse("8080");
+    public static String PAYMENT_BASE = RequestURI.SCHEMA_HTTP + RequestURI.PAYMENT_HOST + ":" + RequestURI.PAYMENT_PORT;
+    public static String PAYMENT_API = Optional.ofNullable(System.getenv("app.payment.api")).orElse("/api/account/v1");
+
     //public static String ABC_XY = Optional.ofNullable(System.getenv("")).orElse("");
 
     public static HttpHeaders createHeaderFrom(String userToken) {
