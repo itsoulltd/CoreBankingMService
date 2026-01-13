@@ -276,7 +276,7 @@ public class DashboardView extends Composite<Div> {
                     try {
                         List<String> exclusionList = Arrays.asList(excludes);
                         List<Map<String, Object>> rows = MessageParser.unmarshal(
-                                new TypeReference<List<Map<String, Object>>>() {}, response.getPayload());
+                                new TypeReference<>() {}, response.getMessage());
                         List<String> accTitles = rows.stream().flatMap(row ->
                                 Stream.of(Optional.ofNullable(row.get("account_ref")).orElse("").toString())
                         ).filter(val -> !exclusionList.contains(val))

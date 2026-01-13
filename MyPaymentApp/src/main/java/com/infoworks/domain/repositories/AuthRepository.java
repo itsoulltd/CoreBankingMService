@@ -4,12 +4,14 @@ import com.infoworks.config.ApplicationProperties;
 import com.infoworks.config.RequestURI;
 import com.infoworks.config.UserRole;
 import com.infoworks.domain.entities.User;
+import com.infoworks.domain.models.Login;
 import com.infoworks.objects.Response;
 import com.infoworks.orm.Property;
 import com.infoworks.utils.jwt.TokenProvider;
 import com.infoworks.utils.jwt.impl.JWebToken;
 import com.infoworks.utils.jwt.models.JWTHeader;
 import com.infoworks.utils.jwt.models.JWTPayload;
+import com.infoworks.utils.rest.client.PostTask;
 import com.vaadin.flow.component.UI;
 import org.springframework.stereotype.Component;
 
@@ -168,7 +170,13 @@ public class AuthRepository {
     }
 
     public String login(String username , String password) throws IOException {
-        return "";
+        /* /auth/v1/login */
+        //Response response = post(new Login(username, password), "login");
+        PostTask postTask = new PostTask(RequestURI.AUTH_BASE + RequestURI.AUTH_API, "login");
+        postTask.setBody(new Login(username, password), null);
+        Response response = postTask.execute(null);
+        String token = response.getMessage();
+        return token;
     }
 
     public boolean isAccountExist(String username) throws IOException {

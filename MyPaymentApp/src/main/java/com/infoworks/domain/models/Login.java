@@ -1,10 +1,12 @@
 package com.infoworks.domain.models;
 
+import com.infoworks.config.UserRole;
 import com.infoworks.objects.Message;
 
 public class Login extends Message {
     private String username;
     private String password;
+    private String role = UserRole.USER.name();
 
     public Login(String username, String password) {
         this.username = username;
@@ -25,5 +27,13 @@ public class Login extends Message {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
     }
 }
