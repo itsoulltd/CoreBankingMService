@@ -1,6 +1,5 @@
 package com.infoworks.services.excel;
 
-import com.infoworks.lab.definition.ContentWriter;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -10,7 +9,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.*;
 
-public class AsyncWriter implements ContentWriter<List<String>> {
+public class AsyncWriter implements AutoCloseable {
 
     protected Workbook workbook;
     protected OutputStream outfile;

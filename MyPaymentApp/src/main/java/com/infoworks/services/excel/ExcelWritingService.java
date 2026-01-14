@@ -1,8 +1,5 @@
 package com.infoworks.services.excel;
 
-import com.infoworks.lab.definition.ContentWriter;
-import com.infoworks.lab.definition.WritingService;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -11,7 +8,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class ExcelWritingService implements WritingService {
+public class ExcelWritingService {
 
     private static Logger LOG = Logger.getLogger(ExcelWritingService.class.getSimpleName());
 
@@ -29,7 +26,7 @@ public class ExcelWritingService implements WritingService {
         writer.close();
     }
 
-    public ContentWriter createWriter(boolean xssf, String outFileName, boolean replace) {
+    public AsyncWriter createWriter(boolean xssf, String outFileName, boolean replace) {
         try {
             if(outFileName == null || outFileName.isEmpty()) return null;
             if (replace) removeIfExist(outFileName);
@@ -45,7 +42,7 @@ public class ExcelWritingService implements WritingService {
         return null;
     }
 
-    public ContentWriter createAsyncWriter(int rowSize, String outFileName, boolean replace) {
+    public StreamWriter createStreamWriter(int rowSize, String outFileName, boolean replace) {
         try {
             if(outFileName == null || outFileName.isEmpty()) return null;
             if (replace) removeIfExist(outFileName);
