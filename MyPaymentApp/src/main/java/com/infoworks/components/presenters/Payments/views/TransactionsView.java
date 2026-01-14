@@ -1,11 +1,13 @@
 package com.infoworks.components.presenters.Payments.views;
 
+import com.infoworks.components.component.FileDownload.FileDownload;
 import com.infoworks.components.component.FormActionBar;
 import com.infoworks.components.component.IndeterminateDialog;
 import com.infoworks.components.presenters.Payments.tasks.TransactionHistoryTask;
 import com.infoworks.components.presenters.Payments.view.models.Transaction;
 import com.infoworks.components.presenters.Payments.view.models.TransactionType;
 import com.infoworks.config.AppQueue;
+import com.infoworks.config.ApplicationProperties;
 import com.infoworks.services.excel.*;
 import com.infoworks.domain.repositories.VAccountRepository;
 import com.vaadin.flow.component.*;
@@ -274,38 +276,32 @@ public class TransactionsView extends Composite<Div> {
 
     private void downloadExcel(UI ui, List<Map> transactions) {
         try {
-            AsyncWriter writer = new AsyncWriter(true, new ByteArrayOutputStream());
-            // Prepare Header-Column and rows:
+            //Prepare Header-Column and rows:
             String[] headers = {"AccountName","Currency","Amount","Balance","Type","Date","Ref"};
             String[] colKeys = {"account_ref","currency","amount","balance","transaction_type","transaction_date","transaction_ref"};
             Map<Integer, List<String>> data = new HashMap<>();
-            data.put(0, Arrays.asList(headers));
             Map<Integer, List<String>> converted = AsyncWriter.convert(transactions, colKeys);
             data.putAll(converted);
+            data.put(0, Arrays.asList(headers));
+
+            //AsyncWriter:
+            AsyncWriter writer = new AsyncWriter(true, new ByteArrayOutputStream());
             writer.write("data", data, false);
             writer.flush();
             InputStream ios = new ByteArrayInputStream(((ByteArrayOutputStream) writer.getOutfile()).toByteArray());
-
-            // Now Prepare download:
-            // New Api Vaadin (24.9+):
-            StreamResource resource = new StreamResource("example.xlsx", () -> ios);
-            resource.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-            StreamRegistration registry = VaadinSession.getCurrent().getResourceRegistry().registerResource(resource);
-
-            // Download steps:
-            Anchor downloadLink = new Anchor(registry.getResourceUri().toString(), "");
-            downloadLink.getElement().setAttribute("download", true);
-
-            // Trigger download:
-            ui.access(() -> {
-                downloadLink.add(new Text(""));
-                this.navBar.add(downloadLink);
-                downloadLink.getElement().callJsFunction("click");
-                this.navBar.remove(downloadLink);
-            });
-            //
             writer.close();
-            ios.close();
+
+            //Prepare FileDownload:
+            FileDownload downloadView = new FileDownload("Download Report (*.xlsx): "
+                    , VaadinIcon.CLOUD_DOWNLOAD_O.create(), "Report.xlsx", ios);
+            Dialog dialog = new Dialog();
+            dialog.addDetachListener(e -> {
+                try {
+                    ios.close();
+                } catch (IOException ex) {LOG.error(ex.getMessage(), ex);}
+            });
+            dialog.add(downloadView);
+            dialog.open();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
