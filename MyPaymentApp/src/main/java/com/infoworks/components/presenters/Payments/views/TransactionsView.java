@@ -36,6 +36,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -280,9 +281,9 @@ public class TransactionsView extends Composite<Div> {
             String[] headers = {"AccountName","Currency","Amount","Balance","Type","Date","Ref"};
             String[] colKeys = {"account_ref","currency","amount","balance","transaction_type","transaction_date","transaction_ref"};
             Map<Integer, List<String>> data = new HashMap<>();
-            Map<Integer, List<String>> converted = AsyncWriter.convert(transactions, colKeys);
-            data.putAll(converted);
+            Map<Integer, List<String>> converted = AsyncWriter.convert(transactions, 1, colKeys);
             data.put(0, Arrays.asList(headers));
+            data.putAll(converted);
 
             //AsyncWriter:
             AsyncWriter writer = new AsyncWriter(true, new ByteArrayOutputStream());
@@ -292,8 +293,9 @@ public class TransactionsView extends Composite<Div> {
             writer.close();
 
             //Prepare FileDownload:
-            FileDownload downloadView = new FileDownload("Download Report (*.xlsx): "
-                    , VaadinIcon.CLOUD_DOWNLOAD_O.create(), "Report.xlsx", ios);
+            String reportName = String.format("Balance_Sheet_%s.xlsx", Instant.now().toEpochMilli());
+            FileDownload downloadView = new FileDownload("Download Report -> "
+                    , VaadinIcon.CLOUD_DOWNLOAD_O.create(), reportName, ios);
             Dialog dialog = new Dialog();
             dialog.addDetachListener(e -> {
                 try {

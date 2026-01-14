@@ -66,10 +66,10 @@ public class AsyncWriter implements ContentWriter<List<String>> {
         }
     }
 
-    public static Map<Integer, List<String>> convert(List<Map> response, String... keys) {
+    public static Map<Integer, List<String>> convert(List<Map> response, int startIndex, String... keys) {
         List<String> keysList = Arrays.stream(keys).toList();
         Map<Integer, List<String>> result = new HashMap<>();
-        int index = 0;
+        int index = Math.max(startIndex, 0);
         for (Map row : response) {
             List<String> rowList = keysList.stream()
                     .map(key -> Optional.ofNullable(row.get(key)).orElse("").toString())
