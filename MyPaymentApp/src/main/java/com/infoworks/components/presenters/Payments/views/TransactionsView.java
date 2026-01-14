@@ -6,9 +6,8 @@ import com.infoworks.components.presenters.Payments.tasks.TransactionHistoryTask
 import com.infoworks.components.presenters.Payments.view.models.Transaction;
 import com.infoworks.components.presenters.Payments.view.models.TransactionType;
 import com.infoworks.config.AppQueue;
-import com.infoworks.config.ExcelWritingService;
+import com.infoworks.services.excel.*;
 import com.infoworks.domain.repositories.VAccountRepository;
-import com.infoworks.domain.tasks.DisplayAsyncNotification;
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -261,7 +260,7 @@ public class TransactionsView extends Composite<Div> {
                 if (action.equalsIgnoreCase(ACTION_SEARCH)) {
                     updateGridView(ui, transactions);
                 } else {
-                    downloadExcel(ui, transactions);
+                    downloadExcel(ui, response);
                 }
             });
         }
@@ -270,17 +269,21 @@ public class TransactionsView extends Composite<Div> {
     }
 
     private void updateGridView(UI ui, List<Transaction> transactions) {
-        this.mainView.setItems(transactions);
+        ui.access(() -> this.mainView.setItems(transactions));
     }
 
-    private void downloadExcel(UI ui, List<Transaction> transactions) {
+    private void downloadExcel(UI ui, List<Map> transactions) {
         try {
-            ExcelWritingService.AsyncWriter writer = new ExcelWritingService.AsyncWriter(true, new ByteArrayOutputStream());
+            AsyncWriter writer = new AsyncWriter(true, new ByteArrayOutputStream());
             // Prepare Header-Column and rows:
+            String[] headers = {"AccountName","Currency","Amount","Balance","Type","Date","Ref"};
+            String[] colKeys = {"account_ref","currency","amount","balance","transaction_type","transaction_date","transaction_ref"};
             Map<Integer, List<String>> data = new HashMap<>();
-            data.put(0, Arrays.asList("Prefix","AccountName","Currency","Amount","Balance","Type","Date"));
-            //...
-            writer.write("data", data, true);
+            data.put(0, Arrays.asList(headers));
+            Map<Integer, List<String>> converted = AsyncWriter.convert(transactions, colKeys);
+            data.putAll(converted);
+            writer.write("data", data, false);
+            writer.flush();
             InputStream ios = new ByteArrayInputStream(((ByteArrayOutputStream) writer.getOutfile()).toByteArray());
 
             // Now Prepare download:
@@ -294,11 +297,16 @@ public class TransactionsView extends Composite<Div> {
             downloadLink.getElement().setAttribute("download", true);
 
             // Trigger download:
-            downloadLink.add(new Text(""));
-            this.navBar.add(downloadLink);
-            downloadLink.getElement().callJsFunction("click");
-            this.navBar.remove(downloadLink);
-        } catch (IOException e) {
+            ui.access(() -> {
+                downloadLink.add(new Text(""));
+                this.navBar.add(downloadLink);
+                downloadLink.getElement().callJsFunction("click");
+                this.navBar.remove(downloadLink);
+            });
+            //
+            writer.close();
+            ios.close();
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
