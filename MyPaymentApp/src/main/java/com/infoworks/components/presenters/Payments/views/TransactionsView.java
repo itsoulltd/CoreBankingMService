@@ -7,9 +7,8 @@ import com.infoworks.components.presenters.Payments.tasks.TransactionHistoryTask
 import com.infoworks.components.presenters.Payments.view.models.Transaction;
 import com.infoworks.components.presenters.Payments.view.models.TransactionType;
 import com.infoworks.config.AppQueue;
-import com.infoworks.config.ApplicationProperties;
-import com.infoworks.services.excel.*;
 import com.infoworks.domain.repositories.VAccountRepository;
+import com.infoworks.services.excel.writer.AsyncWriter;
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -18,7 +17,6 @@ import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
-import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
@@ -26,9 +24,6 @@ import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.server.StreamRegistration;
-import com.vaadin.flow.server.StreamResource;
-import com.vaadin.flow.server.VaadinSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
