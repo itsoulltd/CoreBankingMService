@@ -1,9 +1,9 @@
 package com.infoworks.lab.services.vaccount;
 
-import com.infoworks.lab.rest.models.Message;
-import com.infoworks.lab.rest.models.Response;
-import com.it.soul.lab.connect.io.ScriptRunner;
-import com.itsoul.lab.ledgerbook.connector.SourceConnector;
+import com.infoworks.ledgerbook.connector.SourceConnector;
+import com.infoworks.objects.Message;
+import com.infoworks.objects.Response;
+import com.infoworks.script.SQLScriptExecutor;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpStatus;
 
@@ -26,13 +26,12 @@ public class InitializeVAccountDB extends LedgerTask {
     @Override
     public Message execute(Message message) throws RuntimeException {Response response = new Response();
         SourceConnector connector = getConnector();
-        ScriptRunner runner = new ScriptRunner();
+        SQLScriptExecutor runner = new SQLScriptExecutor();
         //Fixing using Spring ClassPathResource.java
         //File file = new ClassPathResource(connector.schema()).getFile();
         //
         try(InputStream stream = new ClassPathResource(connector.schema()).getInputStream();
             Connection connection = connector.getConnection()) {
-            //
             String[] cmds = runner.commands(stream);
             runner.execute(cmds, connection);
         } catch (SQLException | FileNotFoundException e) {

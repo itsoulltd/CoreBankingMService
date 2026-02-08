@@ -1,7 +1,7 @@
 package com.infoworks.lab.domain.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.infoworks.lab.rest.models.Message;
+import com.infoworks.objects.Message;
 
 import javax.validation.constraints.NotEmpty;
 

@@ -1,18 +1,18 @@
 package com.infoworks.lab.services.ledger;
 
 import com.infoworks.lab.domain.models.TransactionSearchQuery;
-import com.it.soul.lab.sql.SQLExecutor;
-import com.it.soul.lab.sql.query.QueryType;
-import com.it.soul.lab.sql.query.SQLJoinQuery;
-import com.it.soul.lab.sql.query.SQLQuery;
-import com.it.soul.lab.sql.query.models.Operator;
-import com.it.soul.lab.sql.query.models.Predicate;
-import com.it.soul.lab.sql.query.models.Where;
-import com.itsoul.lab.generalledger.entities.*;
-import com.itsoul.lab.generalledger.util.AESCipher;
-import com.itsoul.lab.ledgerbook.accounting.head.ChartOfAccounts;
-import com.itsoul.lab.ledgerbook.accounting.head.Ledger;
-import com.itsoul.lab.ledgerbook.connector.SourceConnector;
+import com.infoworks.generalledger.entities.*;
+import com.infoworks.generalledger.util.AESCipher;
+import com.infoworks.ledgerbook.accounting.head.ChartOfAccounts;
+import com.infoworks.ledgerbook.accounting.head.Ledger;
+import com.infoworks.ledgerbook.connector.SourceConnector;
+import com.infoworks.sql.executor.SQLExecutor;
+import com.infoworks.sql.query.QueryType;
+import com.infoworks.sql.query.SQLJoinQuery;
+import com.infoworks.sql.query.SQLQuery;
+import com.infoworks.sql.query.models.Operator;
+import com.infoworks.sql.query.models.Predicate;
+import com.infoworks.sql.query.models.Where;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

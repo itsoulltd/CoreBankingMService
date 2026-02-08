@@ -1,12 +1,11 @@
 package com.infoworks.lab.webapp.config;
 
 import com.infoworks.lab.services.ledger.LedgerBook;
-import com.itsoul.lab.ledgerbook.connector.SQLConnector;
-import com.itsoul.lab.ledgerbook.connector.SQLDataSourceConnector;
-import com.itsoul.lab.ledgerbook.connector.SourceConnector;
+import com.infoworks.ledgerbook.connector.SQLConnector;
+import com.infoworks.ledgerbook.connector.SQLDataSourceConnector;
+import com.infoworks.ledgerbook.connector.SourceConnector;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;

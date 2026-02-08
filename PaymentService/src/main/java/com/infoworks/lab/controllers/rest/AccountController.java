@@ -1,17 +1,18 @@
 package com.infoworks.lab.controllers.rest;
 
-import com.infoworks.lab.beans.tasks.definition.TaskStack;
-import com.infoworks.lab.domain.models.*;
 import com.infoworks.lab.domain.types.AccountType;
-import com.infoworks.lab.jjwt.JWTPayload;
-import com.infoworks.lab.jjwt.TokenValidator;
-import com.infoworks.lab.rest.models.Response;
+import com.infoworks.tasks.stack.TaskStack;
+import com.infoworks.objects.Response;
+import com.infoworks.lab.domain.models.*;
 import com.infoworks.lab.services.ledger.LedgerBook;
-import com.infoworks.lab.services.vaccount.CheckBalanceTask;
-import com.infoworks.lab.services.vaccount.CheckVAccountExistTask;
 import com.infoworks.lab.services.vaccount.CreateChartOfAccountTask;
 import com.infoworks.lab.services.vaccount.MakeTransactionTask;
-import com.itsoul.lab.generalledger.entities.Transaction;
+import com.infoworks.lab.services.vaccount.CheckBalanceTask;
+import com.infoworks.lab.services.vaccount.CheckVAccountExistTask;
+import com.infoworks.generalledger.entities.Transaction;
+import com.infoworks.utils.jwt.TokenProvider;
+import com.infoworks.utils.jwt.models.JWTPayload;
+import com.infoworks.utils.transaction.TransactionStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -54,7 +55,7 @@ public class AccountController {
         }
         //
         MakeDeposit deposit = new MakeDeposit();
-        deposit.unmarshallingFromMap(createAccount.marshallingToMap(true), true);
+        deposit.unmarshalling(createAccount.marshalling(true), true);
         deposit.setPrefix("CASH");
         deposit.setFrom("CASH@" + AccountType.MASTER.value());
         deposit.setType("deposit");
@@ -62,7 +63,7 @@ public class AccountController {
         //Update create account amount with 0.00:
         createAccount.setAmount("0.00");
         //
-        TaskStack stack = TaskStack.createSync(true);
+        TaskStack stack = new TransactionStack();
         stack.push(new CreateChartOfAccountTask(ledgerBook, createAccount)); //Event:A
         stack.push(new MakeTransactionTask(ledgerBook, deposit));            //Event:B
         stack.commit(true, (message, state) -> {
@@ -93,13 +94,13 @@ public class AccountController {
             response.setError("Invalid Username.");
             return ResponseEntity.unprocessableEntity().body(response);
         }
-        String tokenIss = TokenValidator.parsePayload(token, JWTPayload.class).getIss();
+        String tokenIss = TokenProvider.parsePayload(token, JWTPayload.class).getIss();
         if (!transaction.getUsername().equalsIgnoreCase(tokenIss)){
             response.setError("Unauthorized Access By: " + transaction.getUsername());
             return ResponseEntity.unprocessableEntity().body(response);
         }
         //Now Make The Transaction-Flow
-        TaskStack stack = TaskStack.createSync(true);
+        TaskStack stack = new TransactionStack();
         stack.push(new CheckBalanceTask(ledgerBook, transaction.getUsername(), transaction.getPrefix()));
         stack.push(new MakeTransactionTask(ledgerBook, transaction));
         stack.commit(true, (message, state) -> {
@@ -126,7 +127,7 @@ public class AccountController {
             response.setError("Invalid Username.");
             return ResponseEntity.unprocessableEntity().body(response);
         }
-        String tokenIss = TokenValidator.parsePayload(token, JWTPayload.class).getIss();
+        String tokenIss = TokenProvider.parsePayload(token, JWTPayload.class).getIss();
         if (!transaction.getUsername().equalsIgnoreCase(tokenIss)){
             response.setError("Unauthorized Access By: " + transaction.getUsername());
             return ResponseEntity.unprocessableEntity().body(response);
@@ -135,7 +136,7 @@ public class AccountController {
         transaction.setFrom("CASH@" + AccountType.MASTER.value());
         transaction.setTo(LedgerBook.getACNo(transaction.getUsername(), transaction.getPrefix()));
         //Now Make The Transaction-Flow
-        TaskStack stack = TaskStack.createSync(true);
+        TaskStack stack = new TransactionStack();
         stack.push(new MakeTransactionTask(ledgerBook, transaction));
         stack.commit(false, (message, state) -> {
             if (state == TaskStack.State.Finished){
@@ -161,7 +162,7 @@ public class AccountController {
             response.setError("Invalid Username.");
             return ResponseEntity.unprocessableEntity().body(response);
         }
-        String tokenIss = TokenValidator.parsePayload(token, JWTPayload.class).getIss();
+        String tokenIss = TokenProvider.parsePayload(token, JWTPayload.class).getIss();
         if (!transaction.getUsername().equalsIgnoreCase(tokenIss)){
             response.setError("Unauthorized Access By: " + transaction.getUsername());
             return ResponseEntity.unprocessableEntity().body(response);
@@ -169,7 +170,7 @@ public class AccountController {
         transaction.setPrefix("CASH");
         transaction.setTo("CASH@" + AccountType.MASTER.value());
         //Now Make The Transaction-Flow
-        TaskStack stack = TaskStack.createSync(true);
+        TaskStack stack = new TransactionStack();
         stack.push(new CheckBalanceTask(ledgerBook, transaction.getUsername(), transaction.getPrefix()));
         stack.push(new MakeTransactionTask(ledgerBook, transaction));
         stack.commit(true, (message, state) -> {
@@ -193,7 +194,7 @@ public class AccountController {
                 .setError("Not Implemented")
                 .setStatus(HttpStatus.NOT_IMPLEMENTED.value());
 
-        TaskStack stack = TaskStack.createSync(true);
+        TaskStack stack = new TransactionStack();
         stack.push(new CheckBalanceTask(ledgerBook, username, prefix));
         stack.commit(false, (message, state) -> {
             if (message != null && message instanceof Response)
@@ -215,7 +216,7 @@ public class AccountController {
                 .setError("Not Implemented")
                 .setStatus(HttpStatus.NOT_IMPLEMENTED.value());
 
-        TaskStack stack = TaskStack.createSync(true);
+        TaskStack stack = new TransactionStack();
         stack.push(new CheckVAccountExistTask(ledgerBook, username, prefix));
         stack.commit(false, (message, state) -> {
             if (message != null && message instanceof Response)

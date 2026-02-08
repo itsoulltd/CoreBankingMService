@@ -1,20 +1,20 @@
 package com.infoworks.lab.webapp.config;
 
-import com.infoworks.lab.jsql.JsqlConfig;
+import com.infoworks.sql.executor.SQLExecutor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
-import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.annotation.*;
 import org.springframework.core.env.Environment;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.web.context.WebApplicationContext;
 
 import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
@@ -29,20 +29,25 @@ import javax.sql.DataSource;
 @PropertySource("classpath:application-h2db.properties")
 public class JPAConfig {
 
+    private static Logger LOG = LoggerFactory.getLogger(JPAConfig.class);
     private Environment env;
 
     public JPAConfig(@Autowired Environment env) {
         this.env = env;
     }
 
-    @Bean
-    JsqlConfig getJsqlConfig(DataSource dataSource){
-        return new JsqlConfig(dataSource);
-    }
-
     @Bean("AppDBNameKey")
     String appDBNameKey(){
         return env.getProperty("app.db.name");
+    }
+
+    @Bean
+    @Scope(value = WebApplicationContext.SCOPE_REQUEST, proxyMode = ScopedProxyMode.TARGET_CLASS)
+    //Since SQLExecutor is a WebApplicationContext.SCOPE_REQUEST Variable, it will automatically close connection when garbage-collected.
+    public SQLExecutor executor(DataSource dataSource) throws Exception {
+        SQLExecutor exe = new SQLExecutor(dataSource.getConnection());
+        LOG.info("Executor-Connection Has been Created.");
+        return exe;
     }
 
     @Value("${spring.datasource.driver-class-name}") String driverClassName;

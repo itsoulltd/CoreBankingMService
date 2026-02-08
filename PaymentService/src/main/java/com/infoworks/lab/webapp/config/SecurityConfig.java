@@ -1,19 +1,18 @@
 package com.infoworks.lab.webapp.config;
 
-import com.it.soul.lab.connect.DriverClass;
+import com.infoworks.connect.JDBCDriverClass;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
 @EnableWebSecurity
-public class SecurityConfig extends WebSecurityConfigurerAdapter {
+public class SecurityConfig {
 
     @Bean
     public PasswordEncoder encoder() {
@@ -30,18 +29,19 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             , "/actuator/health"
             , "/actuator/prometheus"
             , "/h2-console/**"
+            , "/v3/api-docs/**"
+            , "/swagger-ui/**"
     };
 
     @Value("${spring.datasource.driver-class-name}") String activeDriverClass;
 
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
-        http.sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .csrf().disable()
-                //.requiresChannel().anyRequest().requiresSecure() //enable for Https
-                //.and()
+                .authorizeRequests().antMatchers(URL_WHITELIST).permitAll()
+                .and()
                 //.authorizeRequests().anyRequest().authenticated() //enable to restrict all
                 .authorizeRequests().antMatchers("/**").permitAll(); //enable to open all
                 /*.authorizeRequests()
@@ -55,16 +55,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .anyRequest().authenticated()
                 .and()
                 .addFilterBefore(new AuthorizationFilter(), BasicAuthenticationFilter.class);*/
-        //
         //Disable for H2 DB:
-        if (activeDriverClass.equalsIgnoreCase(DriverClass.H2_EMBEDDED.toString())){
+        if (activeDriverClass.equalsIgnoreCase(JDBCDriverClass.H2_EMBEDDED.toString())){
             http.headers().frameOptions().disable();
         }
-    }
-
-    @Override
-    public void configure(WebSecurity web) throws Exception {
-        web.ignoring().antMatchers(URL_WHITELIST);
+        return http.build();
     }
 
 }

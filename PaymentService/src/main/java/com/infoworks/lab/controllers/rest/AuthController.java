@@ -3,14 +3,14 @@ package com.infoworks.lab.controllers.rest;
 import com.infoworks.lab.domain.models.CreateAccount;
 import com.infoworks.lab.domain.models.LoginRequest;
 import com.infoworks.lab.domain.models.NewAccountRequest;
-import com.infoworks.lab.jjwt.JWTHeader;
-import com.infoworks.lab.jjwt.JWTPayload;
-import com.infoworks.lab.jjwt.TokenValidator;
-import com.infoworks.lab.jwtoken.definition.TokenProvider;
-import com.infoworks.lab.jwtoken.services.JWTokenProvider;
-import com.infoworks.lab.rest.models.Response;
 import com.infoworks.lab.webapp.config.AuthorizationFilter;
 import com.infoworks.lab.webapp.config.JWTokenValidator;
+import com.infoworks.objects.Response;
+import com.infoworks.utils.jwt.TokenProvider;
+import com.infoworks.utils.jwt.impl.JWebToken;
+import com.infoworks.utils.jwt.models.JWTHeader;
+import com.infoworks.utils.jwt.models.JWTPayload;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -20,10 +20,11 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
 
 import javax.validation.Valid;
+import java.time.Duration;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 @RestController
 @RequestMapping("/auth/v1")
@@ -41,7 +42,7 @@ public class AuthController {
 
     @GetMapping("/isValidToken")
     public ResponseEntity<String> isValid(@RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String token
-                    , @ApiIgnore @AuthenticationPrincipal UserDetails principal){
+                    , @Parameter(hidden = true) @AuthenticationPrincipal UserDetails principal){
         //
         Response response = new Response().
                 setStatus(HttpStatus.NOT_IMPLEMENTED.value())
@@ -51,7 +52,7 @@ public class AuthController {
 
     @GetMapping("/refreshToken")
     public ResponseEntity<String> refreshToken(@RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String token
-            , @ApiIgnore @AuthenticationPrincipal UserDetails principal){
+            , @Parameter(hidden = true) @AuthenticationPrincipal UserDetails principal){
         //
         Response response = new Response().
                 setStatus(HttpStatus.NOT_IMPLEMENTED.value())
@@ -61,7 +62,7 @@ public class AuthController {
 
     @PostMapping("/new/account")
     public ResponseEntity<String> newAccount(@RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String token
-            , @ApiIgnore @AuthenticationPrincipal UserDetails principal
+            , @Parameter(hidden = true) @AuthenticationPrincipal UserDetails principal
             , @Valid @RequestBody NewAccountRequest account){
         Response response = new Response().setStatus(HttpStatus.OK.value())
                 .setMessage("Hello NewAccount");
@@ -90,14 +91,11 @@ public class AuthController {
         JWTPayload payload = new JWTPayload().setSub(request.getUsername())
                 .setIss(request.getUsername())
                 .setIat(new Date().getTime())
-                .setExp(TokenProvider.defaultTokenTimeToLive().getTimeInMillis())
+                .setExp(TokenProvider.timeToLive(Duration.ofHours(1), TimeUnit.HOURS).getTimeInMillis())
                 .addData(AuthorizationFilter.AUTHORITIES_KEY, request.getRole());
         //
-        TokenProvider token = new JWTokenProvider(secret)
-                .setHeader(header)
-                .setPayload(payload);
-        //
-        String tokenKey = token.generateToken(TokenProvider.defaultTokenTimeToLive());
+        TokenProvider token = new JWebToken();
+        String tokenKey = token.generateToken(secret, header, payload);
         LOG.info(tokenKey);
         response.setMessage(tokenKey);
         return ResponseEntity.ok(response.toString());
@@ -105,7 +103,7 @@ public class AuthController {
 
     @PostMapping("/logout")
     public ResponseEntity<String> logout(@RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String token
-            , @ApiIgnore @AuthenticationPrincipal UserDetails principal){
+            , @Parameter(hidden = true) @AuthenticationPrincipal UserDetails principal){
         //
         Response response = new Response().
                 setStatus(HttpStatus.NOT_IMPLEMENTED.value())

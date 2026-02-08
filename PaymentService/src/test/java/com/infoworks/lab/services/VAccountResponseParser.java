@@ -1,7 +1,7 @@
 package com.infoworks.lab.services;
 
-import com.infoworks.lab.rest.models.Message;
-import com.infoworks.lab.rest.models.Response;
+import com.infoworks.objects.MessageParser;
+import com.infoworks.objects.Response;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -18,7 +18,7 @@ public class VAccountResponseParser {
             throw new IOException("Response status:" + response.getStatus()
                     + "; error: " + response.getError());
         //Let's parse payload:
-        Map<String, Object> payload = Message.unmarshal(Map.class, response.getPayload());
+        Map<String, Object> payload = MessageParser.unmarshal(Map.class, response.getPayload());
         return payload == null ? new HashMap<>() : payload;
     }
 

@@ -1,7 +1,7 @@
 package com.infoworks.lab.domain.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.infoworks.lab.rest.models.Response;
+import com.infoworks.objects.Response;
 
 public class ChartOfAccountResponse extends Response {
 

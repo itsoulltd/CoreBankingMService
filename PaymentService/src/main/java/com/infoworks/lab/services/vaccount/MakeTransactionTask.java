@@ -1,10 +1,11 @@
 package com.infoworks.lab.services.vaccount;
 
+import com.infoworks.generalledger.entities.Money;
 import com.infoworks.lab.domain.models.Transaction;
-import com.infoworks.lab.rest.models.Message;
-import com.infoworks.lab.rest.models.Response;
 import com.infoworks.lab.services.ledger.LedgerBook;
-import com.itsoul.lab.generalledger.entities.Money;
+import com.infoworks.objects.Message;
+import com.infoworks.objects.MessageParser;
+import com.infoworks.objects.Response;
 import org.springframework.http.HttpStatus;
 
 import java.io.IOException;
@@ -82,7 +83,7 @@ public class MakeTransactionTask extends LedgerTask {
         if (message == null || message.getPayload() == null || message.getPayload().isEmpty()) return;
         try {
             String amount = transaction.getAmount();
-            Map<String, Object> payload = Message.unmarshal(Map.class, message.getPayload());
+            Map<String, Object> payload = MessageParser.unmarshal(Map.class, message.getPayload());
             if (payload.get("balance") == null || payload.get("balance").toString().isEmpty()) return;
             String balance = payload.get("balance").toString();
             //If amount is less-then balance, then throw Insufficient Balance Exception.

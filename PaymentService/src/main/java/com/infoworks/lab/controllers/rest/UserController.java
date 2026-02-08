@@ -1,18 +1,17 @@
 package com.infoworks.lab.controllers.rest;
 
-import com.infoworks.lab.jsql.ExecutorType;
-import com.infoworks.lab.jsql.JsqlConfig;
-import com.infoworks.lab.rest.models.SearchQuery;
-import com.it.soul.lab.sql.QueryExecutor;
-import com.it.soul.lab.sql.SQLExecutor;
-import com.it.soul.lab.sql.query.QueryType;
-import com.it.soul.lab.sql.query.SQLQuery;
-import com.it.soul.lab.sql.query.SQLSelectQuery;
-import com.it.soul.lab.sql.query.models.Table;
+import com.infoworks.sql.executor.QueryExecutor;
+import com.infoworks.orm.Table;
+import com.infoworks.sql.executor.SQLExecutor;
+import com.infoworks.sql.query.QueryType;
+import com.infoworks.sql.query.SQLQuery;
+import com.infoworks.sql.query.SQLSelectQuery;
+import com.infoworks.sql.query.pagination.SearchQuery;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.Resource;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,12 +23,17 @@ import java.util.stream.Stream;
 @RequestMapping("/user/v1")
 public class UserController {
 
-    private String dbName;
-    private JsqlConfig config;
+    /**
+     * Example of inject @Scope beans.
+     * e.g. @RequestScope bean SQLExecutor to do JDBC-Calls to database.
+     */
+    @Resource(name = "executor")
+    private QueryExecutor executor;
 
-    public UserController(@Qualifier("AppDBNameKey") String dbName, JsqlConfig config) {
+    private String dbName;
+
+    public UserController(@Qualifier("AppDBNameKey") String dbName) {
         this.dbName = dbName;
-        this.config = config;
     }
 
     @GetMapping @SuppressWarnings("Duplicates")
@@ -39,7 +43,7 @@ public class UserController {
         if (page <= 0) page = 1;
         int offset = (page - 1) * limit;
         //Do select:
-        try (QueryExecutor executor = config.create(ExecutorType.SQL, dbName)) {
+        try {
             SQLSelectQuery query = new SQLQuery.Builder(QueryType.SELECT)
                     .columns("id", "client_ref", "tenant_ref"
                             , "account_ref", "amount", "currency")
@@ -65,7 +69,7 @@ public class UserController {
         if (page <= 0) page = 1;
         int offset = (page - 1) * limit;
         //Do select:
-        try (QueryExecutor executor = config.create(ExecutorType.SQL, dbName)) {
+        try {
             SQLSelectQuery query = new SQLQuery.Builder(QueryType.SELECT)
                     .columns("id", "client_ref", "tenant_ref"
                             , "account_ref", "amount", "currency")

@@ -1,9 +1,9 @@
 package com.infoworks.lab.services.vaccount;
 
-import com.infoworks.lab.beans.tasks.nuts.AbstractTask;
-import com.infoworks.lab.rest.models.Message;
 import com.infoworks.lab.services.ledger.LedgerBook;
-import com.it.soul.lab.sql.query.models.Property;
+import com.infoworks.objects.Message;
+import com.infoworks.orm.Property;
+import com.infoworks.tasks.AbstractTask;
 
 import java.util.function.Function;
 
@@ -34,28 +34,6 @@ public abstract class LedgerTask extends AbstractTask {
     private LedgerBook ledgerBook;
     protected LedgerBook getLedgerBook(){
         return ledgerBook;
-    }
-
-    private String appID;
-    protected String getAppID(){
-        if (appID == null){
-            appID = System.getenv("com.itsoul.lab.api.appid");
-        }
-        return appID;
-    }
-    public void setAppID(String appID) {
-        this.appID = appID;
-    }
-
-    private String publicDns;
-    protected String getPublicDns(){
-        if (publicDns == null){
-            publicDns = System.getenv("com.itsoul.lab.api.public.dns");
-        }
-        return publicDns;
-    }
-    public void setPublicDns(String publicDns) {
-        this.publicDns = publicDns;
     }
 
     private String ledgerBookUser;

@@ -2,9 +2,9 @@ package com.infoworks.lab.services.vaccount;
 
 import com.infoworks.lab.domain.models.ChartOfAccountResponse;
 import com.infoworks.lab.domain.models.CreateAccount;
-import com.infoworks.lab.rest.models.Message;
-import com.infoworks.lab.rest.models.Response;
 import com.infoworks.lab.services.ledger.LedgerBook;
+import com.infoworks.objects.Message;
+import com.infoworks.objects.Response;
 import org.springframework.http.HttpStatus;
 
 public class CreateChartOfAccountTask extends LedgerTask {

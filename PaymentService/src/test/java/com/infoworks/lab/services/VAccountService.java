@@ -1,7 +1,7 @@
 package com.infoworks.lab.services;
 
-import com.infoworks.lab.rest.models.Response;
-import com.infoworks.lab.rest.models.SearchQuery;
+import com.infoworks.objects.Response;
+import com.infoworks.sql.query.pagination.SearchQuery;
 import org.springframework.boot.web.client.RootUriTemplateHandler;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;

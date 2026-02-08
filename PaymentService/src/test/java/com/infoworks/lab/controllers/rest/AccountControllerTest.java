@@ -1,13 +1,13 @@
 package com.infoworks.lab.controllers.rest;
 
-import com.infoworks.lab.jjwt.JWTHeader;
-import com.infoworks.lab.jjwt.JWTPayload;
-import com.infoworks.lab.jwtoken.definition.TokenProvider;
-import com.infoworks.lab.jwtoken.services.JWTokenProvider;
-import com.infoworks.lab.rest.models.Response;
-import com.infoworks.lab.rest.models.SearchQuery;
 import com.infoworks.lab.services.VAccountResponseParser;
 import com.infoworks.lab.services.VAccountService;
+import com.infoworks.objects.Response;
+import com.infoworks.sql.query.pagination.SearchQuery;
+import com.infoworks.utils.jwt.TokenProvider;
+import com.infoworks.utils.jwt.impl.JWebToken;
+import com.infoworks.utils.jwt.models.JWTHeader;
+import com.infoworks.utils.jwt.models.JWTPayload;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -38,9 +38,8 @@ public class AccountControllerTest {
                 .addData("password", password)
                 .addData("role",role)
                 .addData("username",username);
-        TokenProvider provider = new JWTokenProvider(UUID.randomUUID().toString())
-                .setPayload(payload).setHeader(header);
-        String token = provider.generateToken(TokenProvider.defaultTokenTimeToLive());
+        TokenProvider provider = new JWebToken();
+        String token = provider.generateToken(UUID.randomUUID().toString(), header, payload);
         return token;
     }
 

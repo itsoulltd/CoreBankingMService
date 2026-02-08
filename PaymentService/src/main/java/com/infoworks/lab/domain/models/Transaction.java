@@ -1,13 +1,21 @@
 package com.infoworks.lab.domain.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.infoworks.lab.domain.validation.constraint.AccountType.IsValidAccountType;
 import org.hibernate.validator.constraints.Length;
 
+import javax.validation.constraints.Pattern;
+
+import static com.infoworks.lab.domain.types.AccountType.USER;
+
 public class Transaction extends CreateAccount {
-    @JsonIgnore private String accountType;
+
+    @JsonIgnore
+    @IsValidAccountType(message = "accountType = MASTER or USER")
+    private String accountType = USER.name();
 
     //@NotNull(message = "type must not be null. Any string less-then 20 char. e.g. transaction, purchase, transfer etc")
-    //@Length(max = 20, min = 1, message = "type has to be 1<=length<=20")
+    @Length(max = 20, min = 1, message = "type has to be 1<=length<=20. e.g. transaction, purchase, transfer etc")
     private String type;
 
     /**
@@ -18,12 +26,15 @@ public class Transaction extends CreateAccount {
     private String ref;
 
     /**
-     * from could be null, because we can reconstruct it from token's embedded userID/issuer/
+     * from could be null, because we can reconstruct it from token's embedded userID/issuer.
      */
     @JsonIgnore
     @Length(max = 20, min = 1, message = "from has to be 1<=length<=20")
+    @Pattern(regexp = ".*@.*", message = "pattern of 'from' must be as follow: prefix@<username/account> e.g CASH@Master, REVENUE@Master, CASH@user-name, bKash@user-name, NAGAD@user-name")
     private String from;
 
+    @Length(max = 20, min = 1, message = "to has to be 1<=length<=20")
+    @Pattern(regexp = ".*@.*", message = "pattern of 'to' must be as follow: prefix@<username/account> e.g CASH@Master, REVENUE@Master, CASH@user-name, bKash@user-name, NAGAD@user-name")
     private String to;
 
     public String getType() {

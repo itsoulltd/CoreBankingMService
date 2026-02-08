@@ -1,20 +1,25 @@
 package com.infoworks.lab.domain.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.infoworks.lab.domain.validation.constraint.AccountPrefix.IsValidPrefix;
 import com.infoworks.lab.domain.validation.constraint.AccountType.IsValidAccountType;
 import com.infoworks.lab.domain.validation.constraint.CurrencyCode.IsValidCurrencyCode;
 import com.infoworks.lab.domain.validation.constraint.MoneyFormat.Money;
-import com.infoworks.lab.rest.models.Response;
+import com.infoworks.objects.Response;
 import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
+import static com.infoworks.lab.domain.types.AccountPrefix.CASH;
+import static com.infoworks.lab.domain.types.AccountType.USER;
+
 public class CreateAccount extends Response {
 
-    @NotNull(message = "prefix must not be null or empty! e.g CASH, REVENUE, bKash, NAGAD etc")
+    @NotNull(message = "prefix must not be null or empty!")
     @Length(max = 6, min = 1, message = "type has to be 1<=length<=6")
-    private String prefix = "CASH";
+    @IsValidPrefix(message = "prefix = CASH, REVENUE, bKash, BANK")
+    private String prefix = CASH.name();
 
     @NotNull(message = "amount has to be not null, you may pass default zero amount. e.g. 0.00 ")
     @Money(message = "amount has to be 0.00 or any combination with at least 2 digit after precision. e.g. 1002001.00 or 1200933.97 etc")
@@ -26,7 +31,7 @@ public class CreateAccount extends Response {
 
     @NotNull(message = "accountType must not be null or empty!")
     @IsValidAccountType(message = "accountType = MASTER or USER")
-    private String accountType = "USER";
+    private String accountType = USER.name();
 
     private String username;
 
@@ -72,6 +77,28 @@ public class CreateAccount extends Response {
             return true;
         } catch (Exception e) {}
         return false;
+    }
+
+    public boolean isAmountGreaterThan(BigDecimal val) {
+        if (val == null) val = new BigDecimal("0.00");
+        return new BigDecimal(getAmount()).compareTo(val) > 0;
+    }
+
+    public boolean isAmountGreaterThanZero() {
+        return isAmountGreaterThan(new BigDecimal("0.00"));
+    }
+
+    public boolean isAmountZero() {
+        return new BigDecimal(getAmount()).compareTo(new BigDecimal("0.00")) == 0;
+    }
+
+    public boolean isAmountLessThan(BigDecimal val) {
+        if (val == null) val = new BigDecimal("0.00");
+        return new BigDecimal(getAmount()).compareTo(val) < 0;
+    }
+
+    public boolean isAmountLessThanZero() {
+        return isAmountLessThan(new BigDecimal("0.00"));
     }
 
     public String getCurrency() {

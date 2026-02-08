@@ -5,25 +5,24 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.1.1.RELEASE</version>
+        <version>2.7.18</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.infoworks.lab</groupId>
-    <artifactId>payment-service</artifactId>
+    <artifactId>virtual-account-service-starter</artifactId>
     <packaging>jar</packaging>
     <version>1.0-SNAPSHOT</version>
 
     <properties>
-        <java.version>1.8</java.version>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
+        <java.version>11</java.version>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jersey2.version>2.27</jersey2.version>
-        <jsqleditor.version>1.1.4.8-RELEASE</jsqleditor.version>
-        <WebComponentKit.version>v1.15.5-RELEASE</WebComponentKit.version>
-        <spring-cloud.version>Greenwich.SR2</spring-cloud.version>
+        <spring-cloud.version>2021.0.9</spring-cloud.version>
         <logstash-logback-encoder.version>6.1</logstash-logback-encoder.version>
+        <passay.version>1.0</passay.version>
     </properties>
 
     <repositories>
@@ -102,7 +101,17 @@
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
             <scope>test</scope>
         </dependency>
         <!-- -->
@@ -126,43 +135,32 @@
         <!-- Jersey-2 bundle ends -->
         <dependency>
             <groupId>com.github.itsoulltd</groupId>
-            <artifactId>JSQLEditor</artifactId>
-            <version>${jsqleditor.version}</version>
+            <artifactId>JFoundationKit</artifactId>
+            <version>[v1.0.1, )</version>
         </dependency>
         <dependency>
-            <groupId>com.github.itsoulltd.WebComponentKit</groupId>
-            <artifactId>http-rest-client</artifactId>
-            <version>${WebComponentKit.version}</version>
+            <groupId>com.github.itsoulltd</groupId>
+            <artifactId>JSqlKit</artifactId>
+            <version>[v1.0.1, )</version>
         </dependency>
         <dependency>
-            <groupId>com.github.itsoulltd.WebComponentKit</groupId>
-            <artifactId>jsql-editor-components</artifactId>
-            <version>${WebComponentKit.version}</version>
+            <groupId>com.github.itsoulltd</groupId>
+            <artifactId>JLedgerKit</artifactId>
+            <version>v1.0.0</version>
         </dependency>
         <dependency>
-            <groupId>com.github.itsoulltd.WebComponentKit</groupId>
-            <artifactId>jjwt-web-token</artifactId>
-            <version>${WebComponentKit.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.github.itsoulltd.WebComponentKit</groupId>
-            <artifactId>ledger-book</artifactId>
-            <version>${WebComponentKit.version}</version>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>32.1.2-jre</version>
         </dependency>
         <!-- -->
-        <!-- https://mvnrepository.com/artifact/io.springfox/springfox-swagger2 -->
-        <!-- https://mvnrepository.com/artifact/io.springfox/springfox-boot-starter -->
+        <!-- https://mvnrepository.com/artifact/org.springdoc/springdoc-openapi-starter-webmvc-ui -->
         <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-swagger2</artifactId>
-            <version>2.9.2</version>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-ui</artifactId>
+            <version>1.7.0</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/io.springfox/springfox-swagger-ui -->
-        <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-swagger-ui</artifactId>
-            <version>2.9.2</version>
-        </dependency>
+        <!-- -->
         <!-- Spring Cloud Sleuth -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
@@ -175,6 +173,12 @@
             <version>${logstash-logback-encoder.version}</version>
         </dependency>
         <!-- -->
+        <!-- Password validator using Passay-v1.0 -->
+        <dependency>
+            <groupId>org.passay</groupId>
+            <artifactId>passay</artifactId>
+            <version>${passay.version}</version>
+        </dependency>
     </dependencies>
 
     <build>

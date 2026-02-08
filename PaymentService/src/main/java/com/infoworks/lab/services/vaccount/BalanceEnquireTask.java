@@ -1,11 +1,12 @@
 package com.infoworks.lab.services.vaccount;
 
+import com.infoworks.generalledger.entities.Money;
 import com.infoworks.lab.domain.models.CreateAccount;
-import com.infoworks.lab.rest.models.Message;
-import com.infoworks.lab.rest.models.Response;
 import com.infoworks.lab.services.ledger.LedgerBook;
-import com.it.soul.lab.sql.query.models.Property;
-import com.itsoul.lab.generalledger.entities.Money;
+import com.infoworks.objects.Message;
+import com.infoworks.objects.MessageParser;
+import com.infoworks.objects.Response;
+import com.infoworks.orm.Property;
 import org.springframework.http.HttpStatus;
 
 import java.io.IOException;
@@ -28,7 +29,7 @@ public class BalanceEnquireTask extends CheckBalanceTask {
     protected String getEnquireAmount(){
         if (enquireAmount == null || enquireAmount.isEmpty()){
             try {
-                CreateAccount account = Message.unmarshal(CreateAccount.class, getMessage().getPayload());
+                CreateAccount account = MessageParser.unmarshal(CreateAccount.class, getMessage().getPayload());
                 enquireAmount = account.getAmount();
             } catch (IOException e) {}
         }

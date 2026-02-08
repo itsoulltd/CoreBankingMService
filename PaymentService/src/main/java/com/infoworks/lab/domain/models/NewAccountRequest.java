@@ -2,10 +2,10 @@ package com.infoworks.lab.domain.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.infoworks.lab.domain.validation.constraint.CurrencyCode.IsValidCurrencyCode;
+import com.infoworks.lab.domain.validation.constraint.Email.EmailPattern;
 import com.infoworks.lab.domain.validation.constraint.MoneyFormat.Money;
-import com.infoworks.lab.rest.models.Message;
-import com.infoworks.lab.rest.validation.Email.EmailPattern;
-import com.infoworks.lab.rest.validation.Password.PasswordRule;
+import com.infoworks.lab.domain.validation.constraint.Password.PasswordRule;
+import com.infoworks.objects.Message;
 
 import javax.validation.constraints.NotEmpty;
 
